@@ -1,7 +1,11 @@
 import * as functions from 'firebase-functions';
 
 import { deleteCacheFileIfExists, saveAsPageCache, fileFromPath } from './storage-helpers';
-import { TREE, saveStatus, failIfStateExists, deleteStatusName } from './db-helpers';
+import { 
+    TREE, 
+    saveStatus, failIfStateExists, deleteStatusName,
+    emptyQueue 
+} from './db-helpers';
 import { getTvShowIndexPage } from './network-helpers';
 import { parseHtml } from './html-helpers';
 import * as TNT from './tntvillage';
@@ -81,6 +85,14 @@ exports.parseFileWhenCreated = functions.storage.object()
                 const page_content : TNT.PageContent = parseHtml(html);
                 console.log(page_content);
                 return page_content;
+            })
+            .then ( (page_content : TNT.PageContent) => {
+                return emptyQueue(TREE.QUEUES.KEYS.DONWLOAD)
+                    .then( () => {return page_content} );
+            })
+            .then ( (page_content : TNT.PageContent) => {
+                return enqueue(TREE.QUEUES.KEYS.DONWLOAD, page_content)
+                    .then( () => {return page_content} );
             })
     });
 

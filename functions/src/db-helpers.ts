@@ -16,6 +16,12 @@ const TREE = {
                 'CACHE_SAVED'        : 'cache_saved',
             }
         }
+    },
+    "QUEUES" : {
+        "ROOT" : '/queues',
+        "KEYS" : {
+            "DONWLOAD" : 'download',
+        }
     }
 };
 
@@ -91,8 +97,12 @@ const saveStatus = ( status_name, status_value ) : Promise<void> => {
     return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).set(status_value);
 }
 
-const deleteStatusName = (status_name : string) => {
+const deleteStatusName = (status_name : string) : Promise<void> => {
     return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).remove();
+}
+
+const emptyQueue = (queue_name : string) : Promise<void> => {
+    return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}`).remove();
 }
 
 const getStatusValue = ( status_name ) : Promise<string> => {
@@ -191,4 +201,5 @@ export {
     // removeNode, mustUpdateCache, getStatusValue,
     deleteStatusName,
     saveStatus, failIfStateExists,
+    emptyQueue,
 };
