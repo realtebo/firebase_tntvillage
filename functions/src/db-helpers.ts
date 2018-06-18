@@ -1,5 +1,8 @@
 import { db } from './app-helpers';
 import * as _ from "lodash";
+import { PostData } from './tntvillage';
+import { database } from 'firebase-admin';
+import { DataSnapshot } from 'firebase-functions/lib/providers/database';
 
 const TREE = {
     "STATUS" : {
@@ -13,6 +16,7 @@ const TREE = {
                 'DELETING_OLD_CACHE' : 'deleting_old_cache',
                 'FETCHING_INDEX'     : 'fetching_index',
                 'SAVING_CACHE'       : 'saving_cache',
+                'CREATING_QUEUE'     : 'creating_queue',
                 'CACHE_SAVED'        : 'cache_saved',
             }
         }
@@ -20,48 +24,15 @@ const TREE = {
     "QUEUES" : {
         "ROOT" : '/queues',
         "KEYS" : {
-            "DONWLOAD" : 'download',
+            "DONWLOAD"     : 'download',
+            "DONWLOADABLE" : 'downloadable',
+            "DONWLOADING"  : 'downloading',
+            "PARSABLE"     : 'parsable',
         }
     }
 };
 
 const ONLINE_RELEASE_COUNT = '/online_release_count';
-
-// Riceve il numero di release attualmente online
-// e risponde con un booleano per indicare se la cache attuale
-// va invalidata o meno. La risposta vale per l'intera cache non per
-// una singola pagina
-const mustUpdateCache = async( online_release_count ) => {
-    
-    const snapshot = await db.ref(ONLINE_RELEASE_COUNT).once("value");
-    const actual_value_in_db = snapshot.val();
-    console.log (`Online ci sono ${online_release_count}, in cache ne abbiamo ${actual_value_in_db}` );
-    if (actual_value_in_db !== online_release_count) {
-        console.log (`C'è la necessità di canellare la cache attuale` );
-        return true;
-    }
-    console.log (`La cache attuale va ancora bene` );
-    return false;
-}
-
-// Forza la rigenerazione della cache creando, per ciascuna pagina
-// da 1 a tot_pages, e forza l'aggiornamento di ONLINE_RELEASE_COUNT 
-/*
-const setPageIndex = async ({ tot_pages, release_count }) => {
-
-    await setReleaseCount(release_count);
-    if (tot_pages === 0) {
-        console.warn("setPageIndex - Qualcosa non va, il numero d page è", tot_pages);
-        return false;
-    }
-    for (let page_number = 1; page_number <= tot_pages ; page_number++) {
-        await db.ref(`creatingIndex`).set(`${page_number}/${tot_pages}`);
-        await setSinglePageStatus(page_number, 'to_read');
-    }
-    await db.ref(`creatingIndex`).remove();
-    return true;
-}
-*/
 
 // La function aggiorna a db il campo ONLINE_RELEASE_COUNT, che viene sorvegliato
 // altrove per verificare se la cache va cancellata o meno
@@ -79,6 +50,12 @@ const setSinglePageStatus = async (page_number, status) => {
     await db.ref(`${PAGE_INDEX}/${page_number}`).set(status);
 }
 */
+
+
+/***************************
+ *      QUEUE HANDLING
+ ***************************/
+
 
 const saveStatus = ( status_name, status_value ) : Promise<void> => {
 
@@ -104,6 +81,30 @@ const deleteStatusName = (status_name : string) : Promise<void> => {
 const emptyQueue = (queue_name : string) : Promise<void> => {
     return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}`).remove();
 }
+
+const enqueue = (queue_name : string, post_data: PostData)  : database.ThenableReference => {
+    return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}`).push(post_data);
+}
+
+const deleteQueuedItem = (ref: database.Reference) : Promise<void> => {
+    return ref.remove();
+};
+
+const moveQueuedItem = (oldRef : database.Reference, new_queue: string) : Promise<void> => {
+    return oldRef.once('value')
+        .then( (snap : DataSnapshot) =>  {
+            return db.ref(`${TREE.QUEUES.ROOT}/${new_queue}`).push( snap.val())
+        })
+        .then( () => {
+            return oldRef.remove();
+        });
+}
+
+
+/***************************
+ *          OTHERS
+ ***************************/
+
 
 const getStatusValue = ( status_name ) : Promise<string> => {
     return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).once("value")
@@ -199,7 +200,7 @@ class InvalidStatusValueError extends StatusDbError {
 export { 
     TREE,
     // removeNode, mustUpdateCache, getStatusValue,
-    deleteStatusName,
+    deleteStatusName, 
     saveStatus, failIfStateExists,
-    emptyQueue,
+    emptyQueue, enqueue, moveQueuedItem, deleteQueuedItem
 };

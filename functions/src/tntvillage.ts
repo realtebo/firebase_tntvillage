@@ -117,7 +117,7 @@ class TntVillageResponse {
  * Dati estrapolati da una pagina
  */
 class TntVillagePageContent {
-    constructor (private total_pages: number, private total_releases: number) {};
+    constructor (readonly total_pages: number, readonly total_releases: number) {};
 }
 
 

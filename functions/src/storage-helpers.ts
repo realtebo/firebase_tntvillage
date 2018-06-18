@@ -2,7 +2,7 @@
 import { getCachePathFromQuery } from './strings-helpers';
 import { bucket } from './app-helpers';
 import { File, ApiResponse, FileMetadata } from '@google-cloud/storage';
-import * as functions from 'firebase-functions';
+
 
 /*#########################
  #      GESTIONE CACHE
@@ -27,16 +27,36 @@ const saveAsPageCache = (html: string, cache_file_path: string) : Promise<void> 
     return cache_file.save(html, cache_file_options);
 }
 
+const cacheFileExists = (page_number: number, category_number: number) : Promise<boolean> => {
+
+    const cache_file_path = getCachePathFromQuery(page_number, category_number);
+    const cache_file = bucket.file(cache_file_path);
+
+    return fileExists(cache_file)
+        .then ( () => {
+            return true;
+        })
+        .catch ( reason => {
+            // Se il file non esiste, ritorno false
+            if (reason instanceof FileNotExistsStorageError) return false;
+
+            // Arrivo qui se c'è un tipo di errore che NON conosco
+            throw reason;
+        })
+}
+
 /*
  * Resituisce sempre e solo un boolean
  * Dà true se il file esiste e non è vuoto
-const isAlreadyCached = async (page_number : number) : Promise<boolean> => {
+ */
+const isAlreadyCached = async (page_number : number, category_number : number) : Promise<boolean> => {
 
-    const file = getCacheFileFromStorage (page_number);
+    const cache_file_path = getCachePathFromQuery(page_number, category_number);
+    const cache_file = bucket.file(cache_file_path);
 
-    return fileExists(file)
+    return fileExists(cache_file)
         .then ( () => {
-            return getFileSizeByObject(file);
+            return getFileSizeByObject(cache_file);
         })
         .then ( (size : number )=> {
             return ( size > 0);
@@ -49,7 +69,6 @@ const isAlreadyCached = async (page_number : number) : Promise<boolean> => {
             throw reason;
         })
 }
-*/
 
 /**
  * Rimuove un file di cache partendo dal numero di pagina
@@ -73,6 +92,14 @@ const deleteCacheFileIfExists = (page_number: number, category_number: number) :
         });
 }
 
+const deleteCacheFileIfEmpty = (page_number: number, category_number: number) : Promise<boolean> => {
+
+    const cache_file_path = getCachePathFromQuery(page_number, category_number);
+    const cache_file = bucket.file(cache_file_path)
+
+    return removeFile (cache_file);
+}
+
 
 /*#########################
  *      LOW_LEVEL
@@ -94,7 +121,7 @@ const removeFile = (file_as_object : File) : Promise<boolean> => {
 const fileExists =  (file_as_object : File) : Promise<boolean> => {
     // file_exists è un array da un solo elemento boolean
     return file_as_object.exists()
-        .then( result => {
+        .then( (result : [Boolean]) => {
             if (result[0] === true) {
                 return true;
             }
@@ -117,19 +144,7 @@ const getFileSizeByObject = (file_as_object : File ) : Promise<number> => {
         });
 }
 
-/*############################
- *         HELPER
- ############################*/
 
-/*
-  Metodo unico per risalire al percorso di un file cache dato il
-// numero di pagina
-const fileNameFromPageNumber = (page_number : number) : string => {
-    const padded = pad(page_number, 5);
-    return `page-cache/page-${padded}.html`;
-    return `/category-${this.post_data.category}/page-${this.post_data.page_number}`;
-}
-*/
 const fileFromPath = ( path: string ) : File => {
     return bucket.file(path);
 }
@@ -186,9 +201,10 @@ class EmptyContentStorageError extends StorageError {
 
 export { 
     saveAsPageCache, 
-    fileExists,
+    fileExists, cacheFileExists,
     removeFile,
     deleteCacheFileIfExists,
+    deleteCacheFileIfEmpty,
     fileFromPath,
     FileNotDeletedStorageError,
     FileNotExistsStorageError

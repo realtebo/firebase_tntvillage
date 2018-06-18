@@ -4,7 +4,7 @@ if (!admin.apps.length) {
     admin.initializeApp();
 }
 
-const myDb = admin.database();
+const myDb     : admin.database.Database = admin.database();
 const myBucket = admin.storage().bucket();
 
 export {
