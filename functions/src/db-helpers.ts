@@ -8,38 +8,29 @@ const TREE = {
     "STATUS" : {
         "ROOT" : '/status',
         "KEYS" : {
-            "GET_PAGE_INDEX" : 'getPageIndex'
+            "GET_PAGE_INDEX" : 'getPageIndex',
+            "RELEASE_COUNT"  : 'releaseCount',
+            "TOTAL_PAGES"    : 'totalPages',
         },
         "KEY_VALUES" : {
             "GET_PAGE_INDEX" : {
                 'REQUESTED'          : 'requested',
-                'DELETING_OLD_CACHE' : 'deleting_old_cache',
-                'FETCHING_INDEX'     : 'fetching_index',
-                'SAVING_CACHE'       : 'saving_cache',
-                'CREATING_QUEUE'     : 'creating_queue',
-                'CACHE_SAVED'        : 'cache_saved',
+                'UPDATING_QUEUE'     : 'updating_queue',
             }
         }
     },
     "QUEUES" : {
         "ROOT" : '/queues',
         "KEYS" : {
-            "DONWLOAD"     : 'download',
-            "DONWLOADABLE" : 'downloadable',
-            "DONWLOADING"  : 'downloading',
-            "PARSABLE"     : 'parsable',
+            "FORCE_DONWLOAD"    : 'force_download',
+            "DONWLOAD"          : 'download',
+            "DONWLOADABLE"      : 'downloadable',
+            "DOWNLOADING"       : 'downloading',
+            "TO_PARSE"          : 'to_parse',
+            "PARSING"           : "parsing",
         }
     }
 };
-
-const ONLINE_RELEASE_COUNT = '/online_release_count';
-
-// La function aggiorna a db il campo ONLINE_RELEASE_COUNT, che viene sorvegliato
-// altrove per verificare se la cache va cancellata o meno
-const setReleaseCount = async (release_count) => {
-    await db.ref(ONLINE_RELEASE_COUNT).set(release_count);
-    return true;
-}
 
 // Imposta lo stato della singola pagina
 // Attualmente viene sorvegliato solo l'evento di CREAZIONE
@@ -90,23 +81,27 @@ const deleteQueuedItem = (ref: database.Reference) : Promise<void> => {
     return ref.remove();
 };
 
-const moveQueuedItem = (oldRef : database.Reference, new_queue: string) : Promise<void> => {
-    return oldRef.once('value')
-        .then( (snap : DataSnapshot) =>  {
-            return db.ref(`${TREE.QUEUES.ROOT}/${new_queue}`).push( snap.val())
-        })
-        .then( () => {
-            return oldRef.remove();
-        });
+const moveQueuedItem = async (old_ref : database.Reference, new_queue: string) : Promise<database.Reference> => {
+    
+    const snapshot : DataSnapshot = await old_ref.once('value');
+    console.warn("Moving item v8 " + snapshot.ref + " to " + new_queue);
+    const new_ref : database.Reference = await db.ref(`${TREE.QUEUES.ROOT}/${new_queue}`).push(snapshot.val());
+    console.log (new_ref.path);
+    await old_ref.remove();
+    return new_ref;
 }
 
 
 /***************************
- *          OTHERS
+ *         STATUS
  ***************************/
 
+const updateReleaseCount = (release_count : number) : Promise<void> => {
+    const status_name = TREE.STATUS.KEYS.RELEASE_COUNT;
+    return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).set(release_count);
+}
 
-const getStatusValue = ( status_name ) : Promise<string> => {
+const getStatusValue = ( status_name : string ) : Promise<string> => {
     return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).once("value")
         .then( (snapshot) => {
             if ( !snapshot.exists() ) {
@@ -116,15 +111,19 @@ const getStatusValue = ( status_name ) : Promise<string> => {
         });
 }
 
-const failIfStateExists = (status_name) : Promise<void> => {
-    return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).once("value")
-        .then( (snapshot) => {
-            if (snapshot.exists()) {
-                throw new KeyAlreadyExistsError(status_name); 
-            } 
-            // Resolve th promise
-            return;
-        });
+ const failIfStateExists = (status_name : string) : Promise<void> => {
+    return  getStatusValue(status_name)
+        .then( () => {
+            throw new KeyAlreadyExistsError(status_name);
+        })
+        .catch( reason => {
+            if (reason instanceof KeyDoesNotExistsError) {
+                // Assorbo l'errore, perchè per questa function è
+                // ok se la chiave  NON esiste
+                return;
+            }
+            throw new Error(reason);
+        } )
 }
 
 
@@ -201,6 +200,7 @@ export {
     TREE,
     // removeNode, mustUpdateCache, getStatusValue,
     deleteStatusName, 
-    saveStatus, failIfStateExists,
-    emptyQueue, enqueue, moveQueuedItem, deleteQueuedItem
+    saveStatus, failIfStateExists, updateReleaseCount,
+    emptyQueue, enqueue, moveQueuedItem, deleteQueuedItem,
+    KeyAlreadyExistsError
 };

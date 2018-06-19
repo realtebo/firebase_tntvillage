@@ -77,6 +77,10 @@ class TntVillagePostData {
     public toString() : string {
         return `cat=${this.category}&page=${this.page_number}&srcrel=${this.search}`;
     }
+
+    get cache_file_path(): string {
+        return getCachePathFromQuery(this.page_number, this.category);
+    }
 }
 
 /**
@@ -117,7 +121,11 @@ class TntVillageResponse {
  * Dati estrapolati da una pagina
  */
 class TntVillagePageContent {
-    constructor (readonly total_pages: number, readonly total_releases: number) {};
+    constructor (
+        readonly table_content: string, 
+        readonly total_pages: number, 
+        readonly total_releases: number
+    ) {};
 }
 
 

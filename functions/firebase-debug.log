@@ -1,0 +1,24 @@
+[debug] [2018-06-19T23:07:28.066Z] ----------------------------------------------------------------------
+[debug] [2018-06-19T23:07:28.068Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\mirko\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase deploy --only functions
+[debug] [2018-06-19T23:07:28.068Z] CLI Version:   3.18.6
+[debug] [2018-06-19T23:07:28.068Z] Platform:      win32
+[debug] [2018-06-19T23:07:28.068Z] Node Version:  v10.3.0
+[debug] [2018-06-19T23:07:28.069Z] Time:          Wed Jun 20 2018 01:07:28 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:07:28.069Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-06-19T23:07:28.078Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-06-19T23:07:28.078Z] > authorizing via signed-in user
+[debug] [2018-06-19T23:07:28.080Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/tntvillage-62cff  
+  
+ Wed Jun 20 2018 01:07:28 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:07:28.820Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:07:28.821Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/tntvillage-62cff/tokens  
+  
+ Wed Jun 20 2018 01:07:28 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:07:29.457Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Deploying to 'tntvillage-62cff'...
+[info] 
+[info] i  deploying functions
+[info] Running command: npm --prefix "%RESOURCE_DIR%" run lint
+[info] Running command: npm --prefix "%RESOURCE_DIR%" run build

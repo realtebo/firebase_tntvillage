@@ -1,4 +1,4 @@
-
+import * as _ from 'lodash';
 import { getCachePathFromQuery } from './strings-helpers';
 import { bucket } from './app-helpers';
 import { File, ApiResponse, FileMetadata } from '@google-cloud/storage';
@@ -45,31 +45,6 @@ const cacheFileExists = (page_number: number, category_number: number) : Promise
         })
 }
 
-/*
- * Resituisce sempre e solo un boolean
- * Dà true se il file esiste e non è vuoto
- */
-const isAlreadyCached = async (page_number : number, category_number : number) : Promise<boolean> => {
-
-    const cache_file_path = getCachePathFromQuery(page_number, category_number);
-    const cache_file = bucket.file(cache_file_path);
-
-    return fileExists(cache_file)
-        .then ( () => {
-            return getFileSizeByObject(cache_file);
-        })
-        .then ( (size : number )=> {
-            return ( size > 0);
-        })
-        .catch ( reason => {
-            // Se il file non esiste, ritorno false
-            if (reason instanceof FileNotExistsStorageError) return false;
-
-            // Arrivo qui se c'è un tipo di errore che NON conosco
-            throw reason;
-        })
-}
-
 /**
  * Rimuove un file di cache partendo dal numero di pagina
  * e dal numero della categoria.
@@ -92,15 +67,6 @@ const deleteCacheFileIfExists = (page_number: number, category_number: number) :
         });
 }
 
-const deleteCacheFileIfEmpty = (page_number: number, category_number: number) : Promise<boolean> => {
-
-    const cache_file_path = getCachePathFromQuery(page_number, category_number);
-    const cache_file = bucket.file(cache_file_path)
-
-    return removeFile (cache_file);
-}
-
-
 /*#########################
  *      LOW_LEVEL
  #########################*/
@@ -108,10 +74,18 @@ const deleteCacheFileIfEmpty = (page_number: number, category_number: number) : 
 /**
  * Rimozione di un file partendo dall'oggetto file 
  */
-const removeFile = (file_as_object : File) : Promise<boolean> => {
-    return file_as_object.delete()
-        .then( () => true )
-        .catch( error => { throw new FileNotDeletedStorageError(error); } )
+const removeFile = async (file_as_object : File) : Promise<boolean> => {
+    
+    try {
+        await file_as_object.delete();
+    } catch (error) { 
+        if (error.code ===  404 ) {
+            // Il file semplicemente non esiste più, non è un errore
+            return true;
+        }
+        throw error; 
+    }
+    return true;
 }
 
 
@@ -144,11 +118,19 @@ const getFileSizeByObject = (file_as_object : File ) : Promise<number> => {
         });
 }
 
-
+/**
+ * Scorciatoia
+ */
 const fileFromPath = ( path: string ) : File => {
     return bucket.file(path);
 }
 
+const readFile = async ( path: string) : Promise<string> => {
+
+    const fileContent : [Buffer] = await fileFromPath(path).download();
+    const html : string = await fileContent[0].toString();
+    return html
+}
 
 /******************************
  *       ERRORI CUSTOM
@@ -202,10 +184,8 @@ class EmptyContentStorageError extends StorageError {
 export { 
     saveAsPageCache, 
     fileExists, cacheFileExists,
-    removeFile,
+    removeFile, readFile,
     deleteCacheFileIfExists,
-    deleteCacheFileIfEmpty,
-    fileFromPath,
     FileNotDeletedStorageError,
     FileNotExistsStorageError
 };

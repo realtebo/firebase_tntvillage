@@ -1,154 +1,153 @@
 import * as functions from 'firebase-functions';
 import * as _  from 'lodash';
 import { 
-    saveAsPageCache, fileFromPath, cacheFileExists,
-    deleteCacheFileIfExists,
-    deleteCacheFileIfEmpty 
+    saveAsPageCache, cacheFileExists,
+    deleteCacheFileIfExists, readFile
 } from './storage-helpers';
 import { 
     TREE, 
     saveStatus, failIfStateExists, deleteStatusName,
-    emptyQueue, enqueue, moveQueuedItem, deleteQueuedItem
+    emptyQueue, enqueue, moveQueuedItem, deleteQueuedItem,
+    updateReleaseCount,
 } from './db-helpers';
-import { getTvShowIndexPage, getPage } from './network-helpers';
-import { parseHtml } from './html-helpers';
+import { getPage } from './network-helpers';
 import * as TNT from './tntvillage';
+import { parseHtml } from './html-helpers';
+import { DataSnapshot } from 'firebase-functions/lib/providers/database';
 import { database } from 'firebase-admin';
 
+
 /**
- * API HTTP  per richiedere l'aggiornamento dell'indice
- * Esempio: https://firebase.google.com/docs/functions/get-started
- * */
-exports.refresh = functions.https.onRequest( (req, res) => {
+* API HTTP  per richiedere l'aggiornamento dell'indice
+* Esempio: https://firebase.google.com/docs/functions/get-started
+* */
+exports.refresh = functions.https.onRequest( async (req, res) => {
 
     const status_name  = TREE.STATUS.KEYS.GET_PAGE_INDEX;
     const status_value = TREE.STATUS.KEY_VALUES.GET_PAGE_INDEX.REQUESTED;
+    
+    try {
+        await failIfStateExists(status_name)
+        await saveStatus(status_name, status_value);
+        return res.status(200).send("Richiesta accettata");
+    } catch ( error ) {
+        return res.status(500).send(`Richiesta rifiutata, Errore non gestibile, ${error}`);
+    }
+});
 
-    failIfStateExists(status_name)
-        .then( () => {
-            // Se arrivo qui, la chiave non esiste, ed è il risulato desiderato
-            return saveStatus(status_name, status_value);
-        })
-        .then( () => {
-            // Se arrivo qui, sono riuscito a salvare il nuovo stato
-            return res.status(200).send("Richiesta accettata");
-        })
-        .catch( (get_status_error : Error) => {
-            return res.status(500).send(`Richiesta rifiutata, Errore non gestibile, ${get_status_error}`);
-        })
-  });
 
 /**
- * Quando ricevo il comando GET_PAGE_INDEX, 
- * - elimino, se già presente, la cache della prima pagina
- * - viene riscaricata la prima pagina
- * - controllo il numero di release online con quelle che abbiamo in db
- * - se diverso provoco la distruzione della cache (della sola pagina indice !!!! )
- * - e la sua rigenerazione
- * - inoltre prepara la coda di download
- */
-exports.getPageIndex = functions.database.ref(`${TREE.STATUS.ROOT}/${TREE.STATUS.KEYS.GET_PAGE_INDEX}`)
-    .onCreate( () : Promise<void> => {
+* Quando ricevo il comando GET_PAGE_INDEX, 
+*/
+
+exports.onRequestPageIndex = functions.database.ref(`${TREE.STATUS.ROOT}/${TREE.STATUS.KEYS.GET_PAGE_INDEX}`)
+    .onCreate( async (snapshot) => {
         
-        const status_name  = TREE.STATUS.KEYS.GET_PAGE_INDEX;
+        const status_name   = TREE.STATUS.KEYS.GET_PAGE_INDEX;
         const status_values = TREE.STATUS.KEY_VALUES.GET_PAGE_INDEX;
 
-        return saveStatus(status_name, status_values.DELETING_OLD_CACHE)
-            .then( () =>{ 
-                return deleteCacheFileIfExists(1, TNT.CATEGORIES.TV_SHOW);
-            })
-            .then( () => {
-                return saveStatus(status_name, status_values.FETCHING_INDEX);
-            })
-            .then( () : Promise<TNT.Response> => {
-                return getTvShowIndexPage();
-            })
-            .then( (tnt_response : TNT.Response) : Promise<TNT.Response> => {
-                return saveStatus(status_name, status_values.SAVING_CACHE)
-                    .then( () => { return tnt_response; });
-            })
-            .then( (tnt_response : TNT.Response) : Promise<string> => {
-                return saveAsPageCache(tnt_response.html, tnt_response.cache_file_path)
-                    .then( () => { return tnt_response.html; });
-            })
-            .then( (html : string) : Promise<string> => {
-                return saveStatus(status_name, status_values.CREATING_QUEUE)
-                    .then( () => { return html; });
-            })
-            .then( (html : string) : Promise<string> => {
-                return emptyQueue(TREE.QUEUES.KEYS.DONWLOAD)
-                    .then( () => { return html; });
-            })
-            .then( (html : string) => {
+        if (snapshot.val() !== status_values.REQUESTED) {
+            return;
+        }
 
-                const page_content : TNT.PageContent = parseHtml(html);
+        try {
+            await saveStatus(status_name, status_values.UPDATING_QUEUE);
+            await enqueue(TREE.QUEUES.KEYS.FORCE_DONWLOAD, new TNT.PostData(1, TNT.CATEGORIES.TV_SHOW));
+            await deleteStatusName(status_name);
+        } catch (reason) {
+            console.warn(reason);
+        }
 
-                // Forzatura 
-                const page_number : number = _.min([10, page_content.total_pages]);
-
-                for (let x = 1;  x <= page_number ; x++) {
-                    enqueue(TREE.QUEUES.KEYS.DONWLOAD, new TNT.PostData(x,TNT.CATEGORIES.TV_SHOW));
-                }
-                return;
-            })
-            .then( () => {
-                return deleteStatusName(status_name);
-            })
-            .catch( reason => {
-                console.warn(reason);
-            });
-            
-    });
-
-/** 
- * Quando un nuovo file viene creato sullo storage,
- * viene letto e ne viene parsato il contenuto HTML
- * per ottenere tutti i dati in esso contenuti 
- */
-exports.parseFileWhenCreated = functions.storage.object()
-    .onFinalize( (metadata : functions.storage.ObjectMetadata) : Promise<TNT.PageContent> => {
-        console.warn("v10 - parseFileWhenCreated - metadata.name");
-        return fileFromPath(metadata.name).download()
-            .then( (response : [Buffer]) : TNT.PageContent => {
-                const html : string = response[0].toString();
-                const page_content : TNT.PageContent = parseHtml(html);
-                return page_content;
-            })
     });
 
 /**
- * Quando un item viene messo in coda di download, lo sposto
- * nella coda 'downloadble', cioè scaricabile 
- * prima di decidere cosa fare, valuto se ho o meno la cache
- * se non ce l'ho, scarico la pagina e la salvo nello storage
- */
-exports.downloadPageWhenQueued = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.DONWLOAD}/{push_id}`)
-    .onCreate( (snapshot : functions.database.DataSnapshot) : Promise<void> => {
+* Gestisce la coda FORCE_DOWNLOAD
+* Scarica una pagina cancellandone la precedente cache se esistente
+*/
+exports.onForceDownload_v7 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.FORCE_DONWLOAD}/{push_id}`)
+    .onCreate( async (snapshot) :  Promise<void> => {
         
-        const item : TNT.PostData       = snapshot.val();
-        const ref  : database.Reference = snapshot.ref;
+        const item : TNT.PostData      = snapshot.val();
+        const { page_number, category} = item;
+
+        const item_ref = snapshot.ref;
         
-        return moveQueuedItem(ref, `${TREE.QUEUES.KEYS.DONWLOADABLE}`)
-            .then( () : Promise<boolean> => {
-                return cacheFileExists(item.page_number, item.category);
-            })
-            .then( () : Promise<boolean> => {
-                return deleteCacheFileIfEmpty(item.page_number, item.category);
-            })
-            .then( () : Promise<TNT.Response> => {
-                return getPage(item.page_number, item.category )
-            }) 
-            .then( (response : TNT.Response) : Promise<TNT.Response> => {
-                return deleteCacheFileIfExists(response.post_data.page_number, response.post_data.category )
-                    .then( () => { return response; });
-            })
-            .then( (response : TNT.Response) : Promise<void> => {
-                return saveAsPageCache(response.html, response.cache_file_path);
-            })
-            .then( () => {
-                return deleteQueuedItem(ref);
-            })
+        try {
+            const new_ref = await moveQueuedItem(item_ref, `${TREE.QUEUES.KEYS.DOWNLOADING}`);
+            await deleteCacheFileIfExists(page_number, category);
+            // Non passato dalla stato DOWNLOADABLE, perchè la scarico a forza, e comunque
+            // so già che NON ho in cache la pagina
+            const response : TNT.Response = await getPage(page_number, category );
+            await saveAsPageCache(response.html, response.cache_file_path);
+            await moveQueuedItem(new_ref, `${TREE.QUEUES.KEYS.TO_PARSE}`);
+        } catch (reason) {
+            console.warn("onForceDownload other error ", reason);
+        }
+        
+    });
+
+/**
+* Gestisce la coda TO_PARSE
+* Legge il contenuto di file e lo parsa
+*/    
+exports.onToParse_v10 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.TO_PARSE}/{push_id}`)
+    .onCreate( async (snapshot) :  Promise<void> => {
+
+        const item : TNT.PostData  = snapshot.val();
+        const cache_path : string  = item.cache_file_path;
+
+        console.warn("parsing ", item, cache_path);
+
+        try {
+            
+            const new_ref : database.Reference   = await moveQueuedItem(snapshot.ref, `${TREE.QUEUES.KEYS.PARSING}`);
+            const html : string                  = await readFile(cache_path);
+            const page_content : TNT.PageContent = await parseHtml(html);
+            
+            await saveStatus(TREE.STATUS.KEYS.RELEASE_COUNT, page_content.total_releases);
+            await saveStatus(TREE.STATUS.KEYS.TOTAL_PAGES, page_content.total_pages);
+
+            await saveAsPageCache(page_content.table_content, cache_path);
+
+            await deleteQueuedItem(new_ref);
+
+        } catch (reason) {
+            console.warn("onToParse error ", reason);
+        }
+
     });
 
 
+
+// Se vengo a sapere che il numero di release è cambiato, setto lo stato GET_PAGE_INDEX.REQUESTED;
+// questo farà si che la pagina indice venga riscaricata e la coda di download rigenerata
+/*
+exports.onReleaseCountChange = functions.database.ref(`${TREE.STATUS.ROOT}/${TREE.STATUS.KEYS.RELEASE_COUNT}`)
+.onWrite ((
+    change: functions.Change<functions.database.DataSnapshot>, 
+    // context: functions.EventContext
+) : any => {
+    console.log ("v1 onReleaseCountCahnge ");
     
+    if (change.before.exists() 
+    && change.after.exists()
+    && (change.after.val() <= change.before.val() )
+) {
+    
+    const status_name  = TREE.STATUS.KEYS.GET_PAGE_INDEX;
+    const status_value = TREE.STATUS.KEY_VALUES.GET_PAGE_INDEX.REQUESTED;
+    
+    return failIfStateExists(status_name)
+    .then( () => {
+        // Se arrivo qui, la chiave non esiste, ed è il risulato desiderato
+        return saveStatus(status_name, status_value);
+    }
+);
+
+} else {
+    return; 
+}
+});
+*/
+
+
