@@ -84,9 +84,7 @@ const deleteQueuedItem = (ref: database.Reference) : Promise<void> => {
 const moveQueuedItem = async (old_ref : database.Reference, new_queue: string) : Promise<database.Reference> => {
     
     const snapshot : DataSnapshot = await old_ref.once('value');
-    console.warn("Moving item v8 " + snapshot.ref + " to " + new_queue);
     const new_ref : database.Reference = await db.ref(`${TREE.QUEUES.ROOT}/${new_queue}`).push(snapshot.val());
-    console.log (new_ref.path);
     await old_ref.remove();
     return new_ref;
 }

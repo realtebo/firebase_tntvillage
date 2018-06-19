@@ -122,12 +122,24 @@ const getFileSizeByObject = (file_as_object : File ) : Promise<number> => {
  * Scorciatoia
  */
 const fileFromPath = ( path: string ) : File => {
+
+    if(typeof path === "undefined") {
+        throw new PathUndefinedStorageError();
+    }
+
+    if (path.trim().length  === 0) {
+        throw new PathEmptyStorageError();
+    }
     return bucket.file(path);
 }
 
 const readFile = async ( path: string) : Promise<string> => {
 
-    const fileContent : [Buffer] = await fileFromPath(path).download();
+    if (typeof path === 'undefined') {
+        throw new PathUndefinedStorageError();
+    }
+    const file : File = await fileFromPath(path);
+    const fileContent : [Buffer] = await file.download();
     const html : string = await fileContent[0].toString();
     return html
 }
@@ -136,8 +148,16 @@ const readFile = async ( path: string) : Promise<string> => {
  *       ERRORI CUSTOM
  *****************************/
 
-class StorageError extends Error {};
+abstract class StorageError extends Error {};
 
+class PathUndefinedStorageError extends StorageError {
+
+    readonly name="PathUndefinedStorageError";
+};
+class PathEmptyStorageError extends StorageError {
+
+    readonly name="PathEmptyStorageError";
+};
 class FileNotDeletedStorageError extends StorageError {
 
     readonly name="FileNotDeletedStorageError";

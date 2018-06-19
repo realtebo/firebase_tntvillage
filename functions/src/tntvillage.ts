@@ -79,7 +79,9 @@ class TntVillagePostData {
     }
 
     get cache_file_path(): string {
-        return getCachePathFromQuery(this.page_number, this.category);
+        const path : string = getCachePathFromQuery(this.page_number, this.category);
+        console.warn ('TntVillagePostData cache_file_path', this.page_number, this.category, path);
+        return path;
     }
 }
 

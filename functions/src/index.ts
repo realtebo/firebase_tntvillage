@@ -90,11 +90,20 @@ exports.onForceDownload_v7 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.
 * Gestisce la coda TO_PARSE
 * Legge il contenuto di file e lo parsa
 */    
-exports.onToParse_v10 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.TO_PARSE}/{push_id}`)
+exports.onToParse_v13 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.TO_PARSE}/{push_id}`)
     .onCreate( async (snapshot) :  Promise<void> => {
 
         const item : TNT.PostData  = snapshot.val();
         const cache_path : string  = item.cache_file_path;
+
+        if (cache_path === 'undefined') {
+            console.warn("cache_path è tuttora vuoto!");    
+            console.warn(item);    
+            console.warn(item.page_number);    
+            console.warn(item.category);    
+            console.warn(item.cache_file_path);
+            return;
+        }
 
         console.warn("parsing ", item, cache_path);
 

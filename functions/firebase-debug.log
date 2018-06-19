@@ -1,24 +1,296 @@
-[debug] [2018-06-19T23:07:28.066Z] ----------------------------------------------------------------------
-[debug] [2018-06-19T23:07:28.068Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\mirko\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase deploy --only functions
-[debug] [2018-06-19T23:07:28.068Z] CLI Version:   3.18.6
-[debug] [2018-06-19T23:07:28.068Z] Platform:      win32
-[debug] [2018-06-19T23:07:28.068Z] Node Version:  v10.3.0
-[debug] [2018-06-19T23:07:28.069Z] Time:          Wed Jun 20 2018 01:07:28 GMT+0200 (ora legale Europa occidentale)
-[debug] [2018-06-19T23:07:28.069Z] ----------------------------------------------------------------------
+[debug] [2018-06-19T23:41:27.367Z] ----------------------------------------------------------------------
+[debug] [2018-06-19T23:41:27.369Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\mirko\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase deploy --only functions
+[debug] [2018-06-19T23:41:27.369Z] CLI Version:   3.18.6
+[debug] [2018-06-19T23:41:27.369Z] Platform:      win32
+[debug] [2018-06-19T23:41:27.369Z] Node Version:  v10.3.0
+[debug] [2018-06-19T23:41:27.370Z] Time:          Wed Jun 20 2018 01:41:27 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:27.370Z] ----------------------------------------------------------------------
 [debug] 
-[debug] [2018-06-19T23:07:28.078Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2018-06-19T23:07:28.078Z] > authorizing via signed-in user
-[debug] [2018-06-19T23:07:28.080Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/tntvillage-62cff  
+[debug] [2018-06-19T23:41:27.377Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-06-19T23:41:27.377Z] > authorizing via signed-in user
+[debug] [2018-06-19T23:41:27.378Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/tntvillage-62cff  
   
- Wed Jun 20 2018 01:07:28 GMT+0200 (ora legale Europa occidentale)
-[debug] [2018-06-19T23:07:28.820Z] <<< HTTP RESPONSE 200
-[debug] [2018-06-19T23:07:28.821Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/tntvillage-62cff/tokens  
+ Wed Jun 20 2018 01:41:27 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:28.036Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:28.038Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/tntvillage-62cff/tokens  
   
- Wed Jun 20 2018 01:07:28 GMT+0200 (ora legale Europa occidentale)
-[debug] [2018-06-19T23:07:29.457Z] <<< HTTP RESPONSE 200
+ Wed Jun 20 2018 01:41:28 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:28.729Z] <<< HTTP RESPONSE 200
 [info] 
 [info] === Deploying to 'tntvillage-62cff'...
 [info] 
 [info] i  deploying functions
 [info] Running command: npm --prefix "%RESOURCE_DIR%" run lint
 [info] Running command: npm --prefix "%RESOURCE_DIR%" run build
+[info] +  functions: Finished running predeploy script.
+[debug] [2018-06-19T23:41:36.920Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "tslint --project tsconfig.json",
+    "build": "./node_modules/.bin/tsc",
+    "serve": "npm run build && firebase serve --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/storage": "^1.7.0",
+    "axios": "^0.18.0",
+    "firebase-admin": "^5.12.1",
+    "firebase-functions": "^1.0.4",
+    "htmlparser2": "^3.9.2",
+    "lodash": "^4.17.10"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.109",
+    "@types/htmlparser2": "^3.7.31",
+    "tslint": "^5.8.0",
+    "typescript": "^2.9.1"
+  },
+  "private": true
+}
+[info] i  functions: ensuring necessary APIs are enabled...
+[debug] [2018-06-19T23:41:36.921Z] >>> HTTP REQUEST GET https://servicemanagement.googleapis.com/v1/services/cloudfunctions.googleapis.com/projectSettings/tntvillage-62cff?view=CONSUMER_VIEW  
+  
+ Wed Jun 20 2018 01:41:36 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:36.922Z] >>> HTTP REQUEST GET https://servicemanagement.googleapis.com/v1/services/runtimeconfig.googleapis.com/projectSettings/tntvillage-62cff?view=CONSUMER_VIEW  
+  
+ Wed Jun 20 2018 01:41:36 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:38.201Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:38.216Z] <<< HTTP RESPONSE 200
+[info] +  functions: all necessary APIs are enabled
+[debug] [2018-06-19T23:41:38.218Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/tntvillage-62cff  
+  
+ Wed Jun 20 2018 01:41:38 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:39.036Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:39.037Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/182101668246:getServerAppConfig  
+  
+ Wed Jun 20 2018 01:41:39 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:39.513Z] <<< HTTP RESPONSE 200
+[info] i  functions: preparing functions directory for uploading...
+[debug] [2018-06-19T23:41:39.516Z] >>> HTTP REQUEST GET https://runtimeconfig.googleapis.com/v1beta1/projects/tntvillage-62cff/configs  
+  
+ Wed Jun 20 2018 01:41:39 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:39.843Z] <<< HTTP RESPONSE 200
+[info] i  functions: packaged functions (80.02 KB) for uploading
+[debug] [2018-06-19T23:41:40.593Z] >>> HTTP REQUEST POST https://cloudfunctions.googleapis.com/v1/projects/tntvillage-62cff/locations/us-central1/functions:generateUploadUrl  
+  
+ Wed Jun 20 2018 01:41:40 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:40.876Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:40.877Z] >>> HTTP REQUEST PUT https://storage.googleapis.com/gcf-upload-us-central1-66a64b58-434b-4041-ba40-f807ec45a24f/b2b28473-874b-4d2d-873d-b38a5505c8fc.zip?GoogleAccessId=service-182101668246@gcf-admin-robot.iam.gserviceaccount.com&Expires=1529453500&Signature=hY5pWQePHp6OK42n6d0DapgR6O3jSm06HDh4%2FKBZI8qnklnogxsB7A%2FJRKa0UPLQWXRY1tJyA34VXQeLMMNNE1xD3UnT3IZsfyi6NuvMiB98457ub5okrkq2TwxNl8SiNabyCeZiTlYxCpNJjZOUNv3NsTmStJmBVbOBvItyVQMldAbAL5zg9XulmePnSZK%2Fx%2BphayRVsyDQ0RPDP%2FQetnvGX8lBT54MgXJgeaFpD78XsfpoCYvQROL1iA6Kc26X6Zzl3LojOxZHPYKCj9xjR3wZwxg4pbB%2FXJxvJOctOpJFuR89uXRKB0ADuxiQTz5vbaRDEAv6B9sVul%2BjVFP8%2Bw%3D%3D  
+ ReadStream {
+  _readableState:
+   ReadableState {
+     objectMode: false,
+     highWaterMark: 65536,
+     buffer: BufferList { length: 1 },
+     length: 65536,
+     pipes: null,
+     pipesCount: 0,
+     flowing: null,
+     ended: false,
+     endEmitted: false,
+     reading: false,
+     sync: false,
+     needReadable: true,
+     emittedReadable: true,
+     readableListening: false,
+     resumeScheduled: false,
+     emitClose: false,
+     destroyed: false,
+     defaultEncoding: 'utf8',
+     awaitDrain: 0,
+     readingMore: false,
+     decoder: null,
+     encoding: null },
+  readable: true,
+  domain: null,
+  _events: { end: [Function] },
+  _eventsCount: 1,
+  _maxListeners: undefined,
+  path:
+   'C:\\Users\\mirko\\AppData\\Local\\Temp\\firebase-functions-1948kE2JdGCZnpiv.zip',
+  fd: 5,
+  flags: 'r',
+  mode: 438,
+  start: undefined,
+  end: Infinity,
+  autoClose: true,
+  pos: undefined,
+  bytesRead: 65536,
+  closed: false } 
+ Wed Jun 20 2018 01:41:40 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:41.483Z] <<< HTTP RESPONSE 200
+[info] +  functions: functions folder uploaded successfully
+[debug] [2018-06-19T23:41:41.484Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/projects/tntvillage-62cff/locations/us-central1/functions  
+  
+ Wed Jun 20 2018 01:41:41 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:41.768Z] <<< HTTP RESPONSE 200
+[info] i  functions: creating function onToParse_v13...
+[debug] [2018-06-19T23:41:41.770Z] Trigger is:  {"eventTrigger":{"resource":"projects/_/instances/tntvillage-62cff/refs/queues/to_parse/{push_id}","eventType":"providers/google.firebase.database/eventTypes/ref.create","service":"firebaseio.com"}}
+[info] i  functions: updating function refresh...
+[debug] [2018-06-19T23:41:41.770Z] Trigger is:  {"httpsTrigger":{}}
+[info] i  functions: updating function onRequestPageIndex...
+[debug] [2018-06-19T23:41:41.771Z] Trigger is:  {"eventTrigger":{"resource":"projects/_/instances/tntvillage-62cff/refs/status/getPageIndex","eventType":"providers/google.firebase.database/eventTypes/ref.create","service":"firebaseio.com"}}
+[info] i  functions: updating function onForceDownload_v7...
+[debug] [2018-06-19T23:41:41.771Z] Trigger is:  {"eventTrigger":{"resource":"projects/_/instances/tntvillage-62cff/refs/queues/force_download/{push_id}","eventType":"providers/google.firebase.database/eventTypes/ref.create","service":"firebaseio.com"}}
+[info] i  functions: deleting function onToParse_v12...
+[debug] [2018-06-19T23:41:41.773Z] >>> HTTP REQUEST POST https://cloudfunctions.googleapis.com/v1/projects/tntvillage-62cff/locations/us-central1/functions  
+ { sourceUploadUrl:
+   'https://storage.googleapis.com/gcf-upload-us-central1-66a64b58-434b-4041-ba40-f807ec45a24f/b2b28473-874b-4d2d-873d-b38a5505c8fc.zip?GoogleAccessId=service-182101668246@gcf-admin-robot.iam.gserviceaccount.com&Expires=1529453500&Signature=hY5pWQePHp6OK42n6d0DapgR6O3jSm06HDh4%2FKBZI8qnklnogxsB7A%2FJRKa0UPLQWXRY1tJyA34VXQeLMMNNE1xD3UnT3IZsfyi6NuvMiB98457ub5okrkq2TwxNl8SiNabyCeZiTlYxCpNJjZOUNv3NsTmStJmBVbOBvItyVQMldAbAL5zg9XulmePnSZK%2Fx%2BphayRVsyDQ0RPDP%2FQetnvGX8lBT54MgXJgeaFpD78XsfpoCYvQROL1iA6Kc26X6Zzl3LojOxZHPYKCj9xjR3wZwxg4pbB%2FXJxvJOctOpJFuR89uXRKB0ADuxiQTz5vbaRDEAv6B9sVul%2BjVFP8%2Bw%3D%3D',
+  name:
+   'projects/tntvillage-62cff/locations/us-central1/functions/onToParse_v13',
+  entryPoint: 'onToParse_v13',
+  labels: { 'deployment-tool': 'cli-firebase' },
+  eventTrigger:
+   { resource:
+      'projects/_/instances/tntvillage-62cff/refs/queues/to_parse/{push_id}',
+     eventType: 'providers/google.firebase.database/eventTypes/ref.create',
+     service: 'firebaseio.com' } } 
+ Wed Jun 20 2018 01:41:41 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:41.774Z] >>> HTTP REQUEST PATCH https://cloudfunctions.googleapis.com/v1/projects/tntvillage-62cff/locations/us-central1/functions/refresh 
+query params: {"updateMask":"sourceUploadUrl,name,labels,httpsTrigger"} 
+ { sourceUploadUrl:
+   'https://storage.googleapis.com/gcf-upload-us-central1-66a64b58-434b-4041-ba40-f807ec45a24f/b2b28473-874b-4d2d-873d-b38a5505c8fc.zip?GoogleAccessId=service-182101668246@gcf-admin-robot.iam.gserviceaccount.com&Expires=1529453500&Signature=hY5pWQePHp6OK42n6d0DapgR6O3jSm06HDh4%2FKBZI8qnklnogxsB7A%2FJRKa0UPLQWXRY1tJyA34VXQeLMMNNE1xD3UnT3IZsfyi6NuvMiB98457ub5okrkq2TwxNl8SiNabyCeZiTlYxCpNJjZOUNv3NsTmStJmBVbOBvItyVQMldAbAL5zg9XulmePnSZK%2Fx%2BphayRVsyDQ0RPDP%2FQetnvGX8lBT54MgXJgeaFpD78XsfpoCYvQROL1iA6Kc26X6Zzl3LojOxZHPYKCj9xjR3wZwxg4pbB%2FXJxvJOctOpJFuR89uXRKB0ADuxiQTz5vbaRDEAv6B9sVul%2BjVFP8%2Bw%3D%3D',
+  name:
+   'projects/tntvillage-62cff/locations/us-central1/functions/refresh',
+  labels: { 'deployment-tool': 'cli-firebase' },
+  httpsTrigger: {} } 
+ Wed Jun 20 2018 01:41:41 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:41.775Z] >>> HTTP REQUEST PATCH https://cloudfunctions.googleapis.com/v1/projects/tntvillage-62cff/locations/us-central1/functions/onRequestPageIndex 
+query params: {"updateMask":"sourceUploadUrl,name,labels,eventTrigger.resource,eventTrigger.eventType,eventTrigger.service"} 
+ { sourceUploadUrl:
+   'https://storage.googleapis.com/gcf-upload-us-central1-66a64b58-434b-4041-ba40-f807ec45a24f/b2b28473-874b-4d2d-873d-b38a5505c8fc.zip?GoogleAccessId=service-182101668246@gcf-admin-robot.iam.gserviceaccount.com&Expires=1529453500&Signature=hY5pWQePHp6OK42n6d0DapgR6O3jSm06HDh4%2FKBZI8qnklnogxsB7A%2FJRKa0UPLQWXRY1tJyA34VXQeLMMNNE1xD3UnT3IZsfyi6NuvMiB98457ub5okrkq2TwxNl8SiNabyCeZiTlYxCpNJjZOUNv3NsTmStJmBVbOBvItyVQMldAbAL5zg9XulmePnSZK%2Fx%2BphayRVsyDQ0RPDP%2FQetnvGX8lBT54MgXJgeaFpD78XsfpoCYvQROL1iA6Kc26X6Zzl3LojOxZHPYKCj9xjR3wZwxg4pbB%2FXJxvJOctOpJFuR89uXRKB0ADuxiQTz5vbaRDEAv6B9sVul%2BjVFP8%2Bw%3D%3D',
+  name:
+   'projects/tntvillage-62cff/locations/us-central1/functions/onRequestPageIndex',
+  labels: { 'deployment-tool': 'cli-firebase' },
+  eventTrigger:
+   { resource:
+      'projects/_/instances/tntvillage-62cff/refs/status/getPageIndex',
+     eventType: 'providers/google.firebase.database/eventTypes/ref.create',
+     service: 'firebaseio.com' } } 
+ Wed Jun 20 2018 01:41:41 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:41.775Z] >>> HTTP REQUEST PATCH https://cloudfunctions.googleapis.com/v1/projects/tntvillage-62cff/locations/us-central1/functions/onForceDownload_v7 
+query params: {"updateMask":"sourceUploadUrl,name,labels,eventTrigger.resource,eventTrigger.eventType,eventTrigger.service"} 
+ { sourceUploadUrl:
+   'https://storage.googleapis.com/gcf-upload-us-central1-66a64b58-434b-4041-ba40-f807ec45a24f/b2b28473-874b-4d2d-873d-b38a5505c8fc.zip?GoogleAccessId=service-182101668246@gcf-admin-robot.iam.gserviceaccount.com&Expires=1529453500&Signature=hY5pWQePHp6OK42n6d0DapgR6O3jSm06HDh4%2FKBZI8qnklnogxsB7A%2FJRKa0UPLQWXRY1tJyA34VXQeLMMNNE1xD3UnT3IZsfyi6NuvMiB98457ub5okrkq2TwxNl8SiNabyCeZiTlYxCpNJjZOUNv3NsTmStJmBVbOBvItyVQMldAbAL5zg9XulmePnSZK%2Fx%2BphayRVsyDQ0RPDP%2FQetnvGX8lBT54MgXJgeaFpD78XsfpoCYvQROL1iA6Kc26X6Zzl3LojOxZHPYKCj9xjR3wZwxg4pbB%2FXJxvJOctOpJFuR89uXRKB0ADuxiQTz5vbaRDEAv6B9sVul%2BjVFP8%2Bw%3D%3D',
+  name:
+   'projects/tntvillage-62cff/locations/us-central1/functions/onForceDownload_v7',
+  labels: { 'deployment-tool': 'cli-firebase' },
+  eventTrigger:
+   { resource:
+      'projects/_/instances/tntvillage-62cff/refs/queues/force_download/{push_id}',
+     eventType: 'providers/google.firebase.database/eventTypes/ref.create',
+     service: 'firebaseio.com' } } 
+ Wed Jun 20 2018 01:41:41 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:41.776Z] >>> HTTP REQUEST DELETE https://cloudfunctions.googleapis.com/v1/projects/tntvillage-62cff/locations/us-central1/functions/onToParse_v12  
+  
+ Wed Jun 20 2018 01:41:41 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:42.137Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:42.142Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:42.224Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:42.233Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:42.427Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:42.429Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/projects/tntvillage-62cff/locations/us-central1/functions  
+  
+ Wed Jun 20 2018 01:41:42 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:42.715Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:42.718Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblRvUGFyc2VfdjEzL0d1TTRTZlpwYUJv  
+  
+ Wed Jun 20 2018 01:41:42 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:42.718Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9yZWZyZXNoL2lrdHFHU3ZqS2Y0  
+  
+ Wed Jun 20 2018 01:41:42 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:42.719Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblJlcXVlc3RQYWdlSW5kZXgvWm54b09NSDFPeUk  
+  
+ Wed Jun 20 2018 01:41:42 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:42.728Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vbkZvcmNlRG93bmxvYWRfdjcvT3ZWUnJsWHJyTWM  
+  
+ Wed Jun 20 2018 01:41:42 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:42.730Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblRvUGFyc2VfdjEyL0NpUVZUdVpiMkZV  
+  
+ Wed Jun 20 2018 01:41:42 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:43.000Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:43.002Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:43.003Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:43.005Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:43.026Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:45.001Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblRvUGFyc2VfdjEzL0d1TTRTZlpwYUJv  
+  
+ Wed Jun 20 2018 01:41:45 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:45.004Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vbkZvcmNlRG93bmxvYWRfdjcvT3ZWUnJsWHJyTWM  
+  
+ Wed Jun 20 2018 01:41:45 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:45.005Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9yZWZyZXNoL2lrdHFHU3ZqS2Y0  
+  
+ Wed Jun 20 2018 01:41:45 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:45.016Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblJlcXVlc3RQYWdlSW5kZXgvWm54b09NSDFPeUk  
+  
+ Wed Jun 20 2018 01:41:45 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:45.028Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblRvUGFyc2VfdjEyL0NpUVZUdVpiMkZV  
+  
+ Wed Jun 20 2018 01:41:45 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:45.230Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:45.271Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:45.273Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:45.275Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:45.287Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:47.231Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblRvUGFyc2VfdjEzL0d1TTRTZlpwYUJv  
+  
+ Wed Jun 20 2018 01:41:47 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:47.273Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vbkZvcmNlRG93bmxvYWRfdjcvT3ZWUnJsWHJyTWM  
+  
+ Wed Jun 20 2018 01:41:47 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:47.276Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9yZWZyZXNoL2lrdHFHU3ZqS2Y0  
+  
+ Wed Jun 20 2018 01:41:47 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:47.277Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblJlcXVlc3RQYWdlSW5kZXgvWm54b09NSDFPeUk  
+  
+ Wed Jun 20 2018 01:41:47 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:47.289Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblRvUGFyc2VfdjEyL0NpUVZUdVpiMkZV  
+  
+ Wed Jun 20 2018 01:41:47 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:47.484Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:47.513Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:47.534Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:47.543Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:47.545Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:49.484Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblRvUGFyc2VfdjEzL0d1TTRTZlpwYUJv  
+  
+ Wed Jun 20 2018 01:41:49 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:49.513Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblJlcXVlc3RQYWdlSW5kZXgvWm54b09NSDFPeUk  
+  
+ Wed Jun 20 2018 01:41:49 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:49.534Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vbkZvcmNlRG93bmxvYWRfdjcvT3ZWUnJsWHJyTWM  
+  
+ Wed Jun 20 2018 01:41:49 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:49.544Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblRvUGFyc2VfdjEyL0NpUVZUdVpiMkZV  
+  
+ Wed Jun 20 2018 01:41:49 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:49.547Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9yZWZyZXNoL2lrdHFHU3ZqS2Y0  
+  
+ Wed Jun 20 2018 01:41:49 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:49.759Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:49.772Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:49.800Z] <<< HTTP RESPONSE 200
+[info] +  functions[onToParse_v12]: Successful delete operation. 
+[debug] [2018-06-19T23:41:49.821Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:49.823Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:51.760Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblRvUGFyc2VfdjEzL0d1TTRTZlpwYUJv  
+  
+ Wed Jun 20 2018 01:41:51 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:51.774Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vblJlcXVlc3RQYWdlSW5kZXgvWm54b09NSDFPeUk  
+  
+ Wed Jun 20 2018 01:41:51 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:51.822Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9vbkZvcmNlRG93bmxvYWRfdjcvT3ZWUnJsWHJyTWM  
+  
+ Wed Jun 20 2018 01:41:51 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:51.825Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dG50dmlsbGFnZS02MmNmZi91cy1jZW50cmFsMS9yZWZyZXNoL2lrdHFHU3ZqS2Y0  
+  
+ Wed Jun 20 2018 01:41:51 GMT+0200 (ora legale Europa occidentale)
+[debug] [2018-06-19T23:41:52.018Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:52.018Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:52.076Z] <<< HTTP RESPONSE 200
+[debug] [2018-06-19T23:41:52.079Z] <<< HTTP RESPONSE 200
