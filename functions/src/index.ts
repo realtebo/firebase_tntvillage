@@ -64,12 +64,11 @@ exports.onRequestPageIndex = functions.database.ref(`${TREE.STATUS.ROOT}/${TREE.
 * Gestisce la coda FORCE_DOWNLOAD
 * Scarica una pagina cancellandone la precedente cache se esistente
 */
-exports.onForceDownload_v7 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.FORCE_DONWLOAD}/{push_id}`)
+exports.onForceDownload_v8 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.FORCE_DONWLOAD}/{push_id}`)
     .onCreate( async (snapshot) :  Promise<void> => {
         
-        const item : TNT.PostData      = snapshot.val();
-        const { page_number, category} = item;
-
+        const item_data : TNT.PostData    = snapshot.val();
+        const { page_number, category}    = item_data;
         const item_ref = snapshot.ref;
         
         try {
@@ -90,22 +89,15 @@ exports.onForceDownload_v7 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.
 * Gestisce la coda TO_PARSE
 * Legge il contenuto di file e lo parsa
 */    
-exports.onToParse_v13 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.TO_PARSE}/{push_id}`)
+exports.onToParse_v16 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.TO_PARSE}/{push_id}`)
+
     .onCreate( async (snapshot) :  Promise<void> => {
 
-        const item : TNT.PostData  = snapshot.val();
-        const cache_path : string  = item.cache_file_path;
+        const { page_number, category}  = snapshot.val();
+        const item : TNT.PostData       = new TNT.PostData (page_number, category);
+        const cache_path : string       = item.cache_file_path;
 
-        if (cache_path === 'undefined') {
-            console.warn("cache_path è tuttora vuoto!");    
-            console.warn(item);    
-            console.warn(item.page_number);    
-            console.warn(item.category);    
-            console.warn(item.cache_file_path);
-            return;
-        }
-
-        console.warn("parsing ", item, cache_path);
+        console.info("Parsing", cache_path);
 
         try {
             
@@ -115,13 +107,11 @@ exports.onToParse_v13 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUE
             
             await saveStatus(TREE.STATUS.KEYS.RELEASE_COUNT, page_content.total_releases);
             await saveStatus(TREE.STATUS.KEYS.TOTAL_PAGES, page_content.total_pages);
-
             await saveAsPageCache(page_content.table_content, cache_path);
-
             await deleteQueuedItem(new_ref);
 
         } catch (reason) {
-            console.warn("onToParse error ", reason);
+            console.warn("onToParse error ", reason.toString());
         }
 
     });

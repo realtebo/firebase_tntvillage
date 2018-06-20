@@ -51,15 +51,17 @@ const setSinglePageStatus = async (page_number, status) => {
 const saveStatus = ( status_name, status_value ) : Promise<void> => {
 
     // search key by value
-    const valid_status_name = _.findKey(TREE.STATUS.KEYS, searched_status_name => searched_status_name === status_name);
+    const valid_status_name = _.findKey(TREE.STATUS.KEYS, item_status_name => item_status_name === status_name);
     if ( !valid_status_name ) {
         throw new InvalidStatusKeyError(status_name);
     }
 
-    // search key by value
-    const valid_status_value = _.findKey(TREE.STATUS.KEY_VALUES[valid_status_name], searched_status_value  => searched_status_value === status_value);
-    if ( !valid_status_value) {
-        throw new InvalidStatusValueError(status_name, status_value);
+    if (TREE.STATUS.KEY_VALUES[status_name]) {
+        // Se ho l'elenco dei valori validi, verifoc che quello passato sia uno di quelli validi
+        const valid_status_value = _.findKey(TREE.STATUS.KEY_VALUES[valid_status_name], item_status_value  => item_status_value === status_value);
+        if ( !valid_status_value) {
+            throw new InvalidStatusValueError(status_name, status_value);
+        }
     }
 
     return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).set(status_value);
