@@ -22,7 +22,7 @@ exports.parseIndex_v5 = functions.https.onRequest( async (req, res) => {
     const response : TNT.Response = await getPage(1, 29);
     const parsed = parseHtml(response.html);
     
-    console.log("parseIndex v18");
+    console.log("parseIndex v19");
 
     await remove ("/debug")
         .catch( e => { 
@@ -30,12 +30,13 @@ exports.parseIndex_v5 = functions.https.onRequest( async (req, res) => {
         });
 
     console.log(parsed.table_content);
-
+    
+    /*
     _.each(parsed.table_content, async (item, outer_key) => {
 
         console.log ("Item received", item);
 
-        /*
+        
         await set(
             `debug/${outer_key}`, 
             _.remove(item, (value, key) => {
@@ -43,8 +44,9 @@ exports.parseIndex_v5 = functions.https.onRequest( async (req, res) => {
                 return value === "children";
             })
         ).catch(e => console.warn(e)) ;
-        */
+        
     });
+    */
 
     res.contentType('html')
             .status(200)
