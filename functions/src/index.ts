@@ -1,19 +1,55 @@
 import * as functions from 'firebase-functions';
 import * as _  from 'lodash';
 import { 
-    saveAsPageCache, cacheFileExists,
+    saveAsPageCache, 
     deleteCacheFileIfExists, readFile
 } from './storage-helpers';
 import { 
-    TREE, 
+    TREE, set, remove,
     saveStatus, failIfStateExists, deleteStatusName,
     enqueue, moveQueuedItem, deleteQueuedItem,
 } from './db-helpers';
 import { getPage } from './network-helpers';
 import * as TNT from './tntvillage';
 import { parseHtml } from './html-helpers';
-import { database } from 'firebase-admin';
+import { 
+    database,
+ } from 'firebase-admin';
 
+
+exports.parseIndex_v5 = functions.https.onRequest( async (req, res) => {
+
+    const response : TNT.Response = await getPage(1, 29);
+    const parsed = parseHtml(response.html);
+    
+    console.log("parseIndex v18");
+
+    await remove ("/debug")
+        .catch( e => { 
+            console.warn("errore ", e); 
+        });
+
+    console.log(parsed.table_content);
+
+    _.each(parsed.table_content, async (item, outer_key) => {
+
+        console.log ("Item received", item);
+
+        /*
+        await set(
+            `debug/${outer_key}`, 
+            _.remove(item, (value, key) => {
+                console.log (key, value, 'children');
+                return value === "children";
+            })
+        ).catch(e => console.warn(e)) ;
+        */
+    });
+
+    res.contentType('html')
+            .status(200)
+            .send( parsed.table_content );
+});
 
 /**
 * API HTTP  per richiedere l'aggiornamento dell'indice
@@ -88,7 +124,6 @@ exports.onForceDownload_v8 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.
 * Legge il contenuto di file e lo parsa
 */    
 exports.onToParse_v17 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.TO_PARSE}/{push_id}`)
-
     .onCreate( async (snapshot) :  Promise<void> => {
 
         const { page_number, category}  = snapshot.val();
@@ -106,7 +141,7 @@ exports.onToParse_v17 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUE
             await saveStatus(TREE.STATUS.KEYS.RELEASE_COUNT, page_content.total_releases);
             await saveStatus(TREE.STATUS.KEYS.TOTAL_PAGES, page_content.total_pages);
             console.log (page_content);
-            await saveAsPageCache(page_content.table_content, cache_path);
+            // await saveAsPageCache(page_content.table_content, cache_path);
             await deleteQueuedItem(new_ref);
 
         } catch (reason) {

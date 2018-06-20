@@ -1,61 +1,46 @@
-import * as htmlparser from 'htmlparser2';
+
+import *  as htmlparser from 'htmlparser2';
+import * as domhandler from 'domhandler';
+import * as _ from 'lodash';
 import { PageContent } from './tntvillage';
 
 const parseHtml = (page_content : string) : PageContent => {
-    
-    let in_total_span = false;
-    let text_counter = 0;
-    let release_count = 0;
-    let tot_pages = 0;
-    let in_release_table_div = false;
 
-    let table_content : string = "";
+    let table_content;
 
-    const parser = new htmlparser.Parser({
-        onopentag: function(name : string, attribs ){
-            if(name === "span" && attribs.class === "total"){
-                in_total_span =true;
-            }
-            if (name === 'div' && attribs.class === "ahowrelease_tb") {
-                in_release_table_div = true;
-            }
-        },
-        ontext: function(text){
-            if (!in_total_span) {
-                return;
-            }
+    const handler = new domhandler( (error, dom) =>  {
         
-            text_counter++;
-       
-            if (text_counter === 2 ) {
-                release_count = parseInt(text);
-                return;
-            }
-            if (text_counter === 6 ) {
-                tot_pages = parseInt(text);
-                return;
-            }
+        console.log ("handler v28" );
 
-            if (in_release_table_div) {
-                table_content += text + "\n";
-            }
-        },
-        onclosetag: function(tagname){
-            if(tagname === "span" && in_total_span){
-                in_total_span = false;
-            }
+        if (error) { console.log ("error", error); return new PageContent("error " + error, 0 ,0); }
 
-            if (tagname === "div" && in_release_table_div) {
-                in_release_table_div = false;
-            }
-        }
-    }, {
-        decodeEntities: true
+        // Prendo solo il div che contiene la tabella
+        const div_showrelease_tb = _.find(dom, item => {
+            return item.name === "div" && item.attribs.class === "showrelease_tb";
+        });
+
+        table_content +=  _.map(div_showrelease_tb, (item) => {
+            
+            if ( item === null) { return {}; }
+            const out = {
+                // type     : item.type,
+                name     : item.name, 
+                attribs  : (item.attribs ? _.keys(item.attribs) : null ),
+                children : (item.children ? item.children.length : null)
+            };
+            console.log (out);
+            return out;
+        });
+
+        return true;
     });
+
+    const parser = new htmlparser.Parser(handler);
+
     parser.write(page_content);
     parser.end();
 
-    return  new PageContent(table_content, tot_pages, release_count);
+    return  new PageContent(table_content, 0, 0);
 };
 
 export { parseHtml };

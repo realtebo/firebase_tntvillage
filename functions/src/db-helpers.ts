@@ -5,6 +5,12 @@ import { database } from 'firebase-admin';
 import { DataSnapshot } from 'firebase-functions/lib/providers/database';
 
 const TREE = {
+    "DEBUG" :  {
+        "ROOT" : '/status',
+        "KEYS" : {
+            'PARSED' : 'parsed'
+        }
+    },
     "STATUS" : {
         "ROOT" : '/status',
         "KEYS" : {
@@ -42,11 +48,22 @@ const setSinglePageStatus = async (page_number, status) => {
 }
 */
 
+/***************************
+ *      LOW LEVEL
+ ***************************/
+
+const set = async ( path, val) => {
+    await db.ref(path).set(val);
+}
+
+const remove = async ( key_to_remove ) => {
+    await db.ref(key_to_remove).remove();
+}
+
 
 /***************************
  *      QUEUE HANDLING
  ***************************/
-
 
 const saveStatus = ( status_name, status_value ) : Promise<void> => {
 
@@ -198,6 +215,7 @@ class InvalidStatusValueError extends StatusDbError {
 
 export { 
     TREE,
+    set, remove,
     // removeNode, mustUpdateCache, getStatusValue,
     deleteStatusName, 
     saveStatus, failIfStateExists, updateReleaseCount,

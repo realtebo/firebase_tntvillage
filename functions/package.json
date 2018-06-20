@@ -13,14 +13,17 @@
   "dependencies": {
     "@google-cloud/storage": "^1.7.0",
     "axios": "^0.18.0",
+    "domhandler": "^2.4.2",
     "firebase-admin": "^5.12.1",
     "firebase-functions": "^1.0.4",
     "htmlparser2": "^3.9.2",
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.10",
+    "parse5": "^5.0.0"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.109",
     "@types/htmlparser2": "^3.7.31",
+    "@types/lodash": "^4.14.109",
+    "@types/parse5": "^5.0.0",
     "tslint": "^5.8.0",
     "typescript": "^2.9.1"
   },

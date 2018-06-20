@@ -124,7 +124,7 @@ class TntVillageResponse {
  */
 class TntVillagePageContent {
     constructor (
-        readonly table_content: string, 
+        readonly table_content: any, 
         readonly total_pages: number, 
         readonly total_releases: number
     ) {};
