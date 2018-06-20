@@ -7,13 +7,11 @@ import {
 import { 
     TREE, 
     saveStatus, failIfStateExists, deleteStatusName,
-    emptyQueue, enqueue, moveQueuedItem, deleteQueuedItem,
-    updateReleaseCount,
+    enqueue, moveQueuedItem, deleteQueuedItem,
 } from './db-helpers';
 import { getPage } from './network-helpers';
 import * as TNT from './tntvillage';
 import { parseHtml } from './html-helpers';
-import { DataSnapshot } from 'firebase-functions/lib/providers/database';
 import { database } from 'firebase-admin';
 
 
@@ -89,7 +87,7 @@ exports.onForceDownload_v8 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.
 * Gestisce la coda TO_PARSE
 * Legge il contenuto di file e lo parsa
 */    
-exports.onToParse_v16 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.TO_PARSE}/{push_id}`)
+exports.onToParse_v17 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUES.KEYS.TO_PARSE}/{push_id}`)
 
     .onCreate( async (snapshot) :  Promise<void> => {
 
@@ -107,6 +105,7 @@ exports.onToParse_v16 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUE
             
             await saveStatus(TREE.STATUS.KEYS.RELEASE_COUNT, page_content.total_releases);
             await saveStatus(TREE.STATUS.KEYS.TOTAL_PAGES, page_content.total_pages);
+            console.log (page_content);
             await saveAsPageCache(page_content.table_content, cache_path);
             await deleteQueuedItem(new_ref);
 
