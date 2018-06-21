@@ -42,7 +42,7 @@ const parseHtml = (page_content : string) : PageContent => {
     let table_content;
     const handler = new domhandler( (error, dom) =>  {
         
-        console.warn ("handler v58" );
+        console.warn ("handler v62" );
 
         if (error) { console.log ("error", error); return new PageContent("error " + error, 0 ,0); }
 
@@ -50,12 +50,12 @@ const parseHtml = (page_content : string) : PageContent => {
         const div_showrelease_tb    = findByNameAndClass (dom, "div", "showrelease_tb");
         const table_element         = findChildByBame (div_showrelease_tb, "table");
         const table_rows : any[]    = findChildrenByName(table_element, "tr");
-        const table_cells : any[][] = _.map(table_rows, (item, key) => {
-            console.log ("riga ", key);
-            const cells = findChildrenByName (item.children, "td");
-            console.log (cells);
+        const table_cells : any     = _.fromPairs(_.map(table_rows, (row, row_index) => {
+            
+            const cells = findChildrenByName (row, "td");
+            console.log ("riga ", row_index, "cells", cells);
             return cells;
-        }) 
+        }));
         console.log("table_cells nella riga successiva");
         console.log(table_cells);
         return table_cells;
