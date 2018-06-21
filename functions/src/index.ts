@@ -22,8 +22,6 @@ exports.parseIndex_v5 = functions.https.onRequest( async (req, res) => {
     const response : TNT.Response = await getPage(1, 29);
     const parsed = parseHtml(response.html);
     
-    console.log("parseIndex v19");
-
     await remove ("/debug")
         .catch( e => { 
             console.warn("errore ", e); 
