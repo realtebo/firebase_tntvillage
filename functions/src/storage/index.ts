@@ -1,8 +1,7 @@
-import * as _ from 'lodash';
-import { getCachePathFromQuery } from './strings-helpers';
-import { bucket } from './app-helpers';
+import Strings from '../strings-helpers';
+import { bucket } from '../app-helpers';
 import { File, ApiResponse, FileMetadata } from '@google-cloud/storage';
-
+import Err  from './errors';
 
 /*#########################
  #      GESTIONE CACHE
@@ -15,7 +14,7 @@ import { File, ApiResponse, FileMetadata } from '@google-cloud/storage';
 const saveAsPageCache = (html: string, cache_file_path: string) : Promise<void> => {
 
     if (html.length === 0) {
-        throw new EmptyContentStorageError(cache_file_path);
+        throw new Err.EmptyContent(cache_file_path);
     }
     const cache_file_options = { 
         metadata : {
@@ -29,7 +28,7 @@ const saveAsPageCache = (html: string, cache_file_path: string) : Promise<void> 
 
 const cacheFileExists = (page_number: number, category_number: number) : Promise<boolean> => {
 
-    const cache_file_path = getCachePathFromQuery(page_number, category_number);
+    const cache_file_path = Strings.getCachePathFromQuery(page_number, category_number);
     const cache_file = bucket.file(cache_file_path);
 
     return fileExists(cache_file)
@@ -38,7 +37,7 @@ const cacheFileExists = (page_number: number, category_number: number) : Promise
         })
         .catch ( reason => {
             // Se il file non esiste, ritorno false
-            if (reason instanceof FileNotExistsStorageError) return false;
+            if (reason instanceof Err.FileNotExists) return false;
 
             // Arrivo qui se c'è un tipo di errore che NON conosco
             throw reason;
@@ -53,7 +52,7 @@ const cacheFileExists = (page_number: number, category_number: number) : Promise
  */
 const deleteCacheFileIfExists = (page_number: number, category_number: number) : Promise<boolean> => {
     
-    const cache_file_path = getCachePathFromQuery(page_number, category_number);
+    const cache_file_path = Strings.getCachePathFromQuery(page_number, category_number);
     const cache_file = bucket.file(cache_file_path);
     
     // Delete cache file if exists
@@ -62,7 +61,7 @@ const deleteCacheFileIfExists = (page_number: number, category_number: number) :
             return removeFile (cache_file);
         })
         .catch( reason => {
-            if (reason instanceof FileNotExistsStorageError) return true;
+            if (reason instanceof Err.FileNotExists) return true;
             throw reason;
         });
 }
@@ -99,7 +98,7 @@ const fileExists =  (file_as_object : File) : Promise<boolean> => {
             if (result[0] === true) {
                 return true;
             }
-            throw new FileNotExistsStorageError(file_as_object);
+            throw new Err.FileNotExists(file_as_object);
         })
 }
 
@@ -124,11 +123,11 @@ const getFileSizeByObject = (file_as_object : File ) : Promise<number> => {
 const fileFromPath = ( path: string ) : File => {
 
     if(typeof path === "undefined") {
-        throw new PathUndefinedStorageError();
+        throw new Err.PathUndefined();
     }
 
     if (path.trim().length  === 0) {
-        throw new PathEmptyStorageError();
+        throw new Err.PathEmpty();
     }
     return bucket.file(path);
 }
@@ -136,76 +135,17 @@ const fileFromPath = ( path: string ) : File => {
 const readFile = async ( path: string) : Promise<string> => {
 
     if (typeof path === 'undefined') {
-        throw new PathUndefinedStorageError();
+        throw new Err.PathUndefined();
     }
-    const file : File = await fileFromPath(path);
+    const file : File            = await fileFromPath(path);
     const fileContent : [Buffer] = await file.download();
-    const html : string = await fileContent[0].toString();
+    const html : string          = await fileContent[0].toString();
     return html
 }
 
-/******************************
- *       ERRORI CUSTOM
- *****************************/
-
-abstract class StorageError extends Error {};
-
-class PathUndefinedStorageError extends StorageError {
-
-    readonly name="PathUndefinedStorageError";
-};
-class PathEmptyStorageError extends StorageError {
-
-    readonly name="PathEmptyStorageError";
-};
-class FileNotDeletedStorageError extends StorageError {
-
-    readonly name="FileNotDeletedStorageError";
-};
-class FileNotExistsStorageError extends StorageError {
-
-    readonly name="FileNotExistsStorageError";
-    readonly file : File;
-
-    constructor(file : File, message?: string) {
-        super(message);
-        this.file = file;
-    }
-
-    toString() : string {
-        if (this.message) { return super.toString() };
-        let message = "";
-        this.file.getSignedUrl()
-            .then( url => {
-                message = `${this.name}: Il file ${url} non esiste`;
-            })
-            .catch( reason => {
-                message = `${this.name}: Il file non esiste; url ignoto per la segunte ragione ${reason}`;
-            });
-        return message;
-    }
-};
-class EmptyContentStorageError extends StorageError {
-
-    readonly name="EmptyContentStorageError";
-    private readonly cache_path: string;
-
-    constructor(cache_path : string, message?: string) {
-        super(message);
-        this.cache_path = cache_path;
-    }
-
-    toString() : string {
-        if (this.message) { return super.toString() };
-        return `${this.name}: Impossibile salvare il file ${this.cache_path}, il contenuto da salvare è vuoto`;
-    }
-};
-
-export { 
+export default { 
     saveAsPageCache, 
     fileExists, cacheFileExists,
     removeFile, readFile,
     deleteCacheFileIfExists,
-    FileNotDeletedStorageError,
-    FileNotExistsStorageError
 };

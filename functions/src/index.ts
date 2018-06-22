@@ -1,8 +1,5 @@
 import * as functions from 'firebase-functions';
-import { 
-    saveAsPageCache, 
-    deleteCacheFileIfExists, readFile
-} from './storage-helpers';
+import Storage from './storage';
 import { 
     TREE, set, remove,
     saveStatus, failIfStateExists, deleteStatusName,
@@ -10,16 +7,16 @@ import {
 } from './db-helpers';
 import { getPage } from './network-helpers';
 import * as TNT from './tntvillage';
-import { parseHtml  } from './html-helpers';
+import Html from './html-helpers';
+import Strings from './strings-helpers';
 import { 
     database,
  } from 'firebase-admin';
 
 
-exports.parseIndex_v5 = functions.https.onRequest( async (req, res) => {
+exports.parseIndex_v7 = functions.https.onRequest( async (req, res) => {
 
-    const response : TNT.Response = await getPage(1, 29);
-    const parsed = parseHtml(response.html);
+    const html : string = Html.parse(await Storage.readFile(Strings.getCachePathFromQuery(1, 29)));
     
     await remove ("/debug")
         .catch( e => { 
@@ -28,7 +25,7 @@ exports.parseIndex_v5 = functions.https.onRequest( async (req, res) => {
 
     res.contentType('html')
             .status(200)
-            .send( parsed.table_content );
+            .send( html );
 });
 
 /**
@@ -87,11 +84,11 @@ exports.onForceDownload_v8 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.
         
         try {
             const new_ref = await moveQueuedItem(item_ref, `${TREE.QUEUES.KEYS.DOWNLOADING}`);
-            await deleteCacheFileIfExists(page_number, category);
+            await Storage.deleteCacheFileIfExists(page_number, category);
             // Non passato dalla stato DOWNLOADABLE, perchè la scarico a forza, e comunque
             // so già che NON ho in cache la pagina
             const response : TNT.Response = await getPage(page_number, category );
-            await saveAsPageCache(response.html, response.cache_file_path);
+            await Storage.saveAsPageCache(response.html, response.cache_file_path);
             await moveQueuedItem(new_ref, `${TREE.QUEUES.KEYS.TO_PARSE}`);
         } catch (reason) {
             console.warn("onForceDownload other error ", reason);
@@ -115,12 +112,12 @@ exports.onToParse_v17 = functions.database.ref(`${TREE.QUEUES.ROOT}/${TREE.QUEUE
         try {
             
             const new_ref : database.Reference   = await moveQueuedItem(snapshot.ref, `${TREE.QUEUES.KEYS.PARSING}`);
-            const html : string                  = await readFile(cache_path);
-            const page_content : TNT.PageContent = await parseHtml(html);
+            const html : string                  = await Storage.readFile(cache_path);
+            // const page_content : TNT.PageContent = await parseHtml(html);
             
-            await saveStatus(TREE.STATUS.KEYS.RELEASE_COUNT, page_content.total_releases);
-            await saveStatus(TREE.STATUS.KEYS.TOTAL_PAGES, page_content.total_pages);
-            console.log (page_content);
+            // await saveStatus(TREE.STATUS.KEYS.RELEASE_COUNT, page_content.total_releases);
+            // await saveStatus(TREE.STATUS.KEYS.TOTAL_PAGES, page_content.total_pages);
+            // console.log (page_content);
             // await saveAsPageCache(page_content.table_content, cache_path);
             await deleteQueuedItem(new_ref);
 

@@ -10,4 +10,4 @@ const getCachePathFromQuery = (page_number: number, category_number: number): st
     return `/category-${padded_category_number}/page-${padded_page_number}.html`;
 }
 
-export { getCachePathFromQuery, pad }
+export default { getCachePathFromQuery, pad }

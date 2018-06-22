@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import * as _ from 'lodash';
-import { getCachePathFromQuery } from './strings-helpers';
+import Strings from './strings-helpers';
 
 const TNTVILLAGE_CATEGORY_CODES = {
     ANY : 0,
@@ -79,7 +79,7 @@ class TntVillagePostData {
     }
 
     get cache_file_path(): string {
-        const path : string = getCachePathFromQuery(this.page_number, this.category);
+        const path : string = Strings.getCachePathFromQuery(this.page_number, this.category);
         console.warn ('TntVillagePostData cache_file_path', this.page_number, this.category, path);
         return path;
     }
@@ -115,7 +115,7 @@ class TntVillageResponse {
      * Compone il percorso dove deve essere salvato questo contenuto
      */
     get cache_file_path(): string {
-        return getCachePathFromQuery(this.post_data.page_number, this.post_data.category);
+        return Strings.getCachePathFromQuery(this.post_data.page_number, this.post_data.category);
     }
 }
 

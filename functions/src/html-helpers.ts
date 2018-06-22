@@ -1,93 +1,49 @@
+import * as cheerio from 'cheerio';
 
-import * as htmlparser from 'htmlparser2';
-import * as Domhandler from 'domhandler';
+// NOTA: Google cloud è ancora a Node 6, usare questa sintassi !
+// https://nodejs.org/docs/latest-v6.x/api/url.html
+import { URL } from 'url';
 import * as _ from 'lodash';
-import { PageContent } from './tntvillage';
-import { inspect }  from 'util';
 
-// Trova un unico elemento in una collection/arrray
-const findByNameAndClass = (dom, name : string, class_name : string) => {
-    return _.find(dom, item => {
-        return (
-            (item.name === name) 
-            && (item.attribs.class === class_name)
-        );
-    });
-}
+const parse = (page_content : string) : string  => {
 
-// Trova un unico elemento in una collection/arrray
-const findByName = (dom, name) => {
-    return _.find(dom, item => {
-        if (!item.name) return false;
-        return (item.name === name);
-    });
-}
+    const $ : CheerioStatic = cheerio.load(page_content);
 
-// Prende i children, se ce ne sono, e cerca un SINGOLO tag per nome
-const findChildByBame = (parent_dom, tag_name) => {
-    if (!parent_dom.children) return null;
-    return findByName(parent_dom.children, tag_name);
-}
-
-// Prende i children, se ce ne sono, cerca TUTTI i tag per nome
-const findChildrenByName = (parent_dom, tag_name : string) : any [] => {
-    if (!parent_dom.children) return null;
-    return _.filter(parent_dom.children, item => {
-        if (!item.name) return false;
-        return (item.name === tag_name);
-    });
-}
-/*
-const getChildrenDictionaryByTagName = (parent_dom, tag_name : string) =>  {
-
-}
-*/
-
-const htmlParserHandler = (error, dom) : void  => {
-        
-    console.warn ("htmlParserHandler v82" );
-    parseHtmlResult = '';
-
-    if (error) { parseHtmlResult = "<PRE>\n" + error.toString() + "<PRE>\n"; return; }
-
-    // Prendo tra i tag radice solo il div che contiene la tabella
-    const div_showrelease_tb    = findByNameAndClass (dom, "div", "showrelease_tb");
-    const table_element         = findChildByBame (div_showrelease_tb, "table");
-    const table_rows : any[]    = findChildrenByName(table_element, "tr");
-
-    // { row_index : {  cell_index : [ cell_children_keys ]  }  }
-    const table_cells : any     = _.map(table_rows, (row, row_index) => {
-
-        const table_td = findChildrenByName (row, "td");
-        const table_td_children = _.map(table_td, (cell, col_index : number)=> { 
-
-            const children_keys = _.map(cell.children, (child, child_index) => {
-                
-                const keys = _.keys(child);
-                if (row_index == 0) {
-                    console.log (`row ${row_index}, col ${col_index}`, keys);
-                }
-                
-                return { child_index : child_index, child_keys : keys };
-            });
-            return { col_index: col_index, children_keys : children_keys};
-        });
-        const row_data = { row_index: row_index, cells : table_td_children };
+    // Recupero le righe
+    const rows : Cheerio = $('DIV.showrelease_tb TABLE TR');
+    const mapped : any = rows.map( (row_index: number, element : CheerioElement) : any => {
+        const row_data =  { [row_index] : {
+            magnet_link     : $(element).find("TD:nth-child(2) A").attr("href"),
+            category_id     : $(element).find("TD:nth-child(3) A").attr("href"),
+            leech_count     : $(element).find("TD:nth-child(4)").text(),
+            seed_count      : $(element).find("TD:nth-child(5)").text(),
+            // I dati seguenti sono nella stessa row ma è corretto
+            title_children  : $(element).find("TD:nth-child(7)").children().length,
+            title_text      : $(element).find("TD:nth-child(7)").text,
+            title           : $(element).find("TD:nth-child(7) A").text,
+        }};
         return row_data;
-    });
+    }).get();   // non dimenticare MAI il get dopo un map quando usi Cheerio!
 
-    parseHtmlResult = "<PRE>\n" + inspect(table_cells) + "<PRE>\n";
+    // solo per debug
+    const html2 = [ 
+
+        $.html($("<H2>").html("parse 42")),
+
+        $.html($("<H3>").html("Riga 1")),
+
+        $.html(
+            $("<PRE>").html( mapped[1] )
+        ),
+        $.html(
+            $("<PRE>").html(JSON.stringify(mapped[1], null, 2))
+        )
+    ].join("\n");
+
+    return html2;
+    
 };
 
-const parseHtml = (page_content : string) : PageContent => {
 
-    const parser = new htmlparser.Parser(new Domhandler(htmlParserHandler));
-    parser.write(page_content);
-    parser.end();
 
-    return new PageContent(parseHtmlResult, 0, 0);
-};
-
-let parseHtmlResult : string; 
-
-export { parseHtml, parseHtmlResult };
+export default { parse };
