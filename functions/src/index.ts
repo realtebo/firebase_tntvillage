@@ -1,5 +1,4 @@
 import * as functions from 'firebase-functions';
-import * as _  from 'lodash';
 import { 
     saveAsPageCache, 
     deleteCacheFileIfExists, readFile
@@ -11,7 +10,7 @@ import {
 } from './db-helpers';
 import { getPage } from './network-helpers';
 import * as TNT from './tntvillage';
-import { parseHtml } from './html-helpers';
+import { parseHtml  } from './html-helpers';
 import { 
     database,
  } from 'firebase-admin';
@@ -26,25 +25,6 @@ exports.parseIndex_v5 = functions.https.onRequest( async (req, res) => {
         .catch( e => { 
             console.warn("errore ", e); 
         });
-
-    console.log(parsed.table_content);
-    
-    /*
-    _.each(parsed.table_content, async (item, outer_key) => {
-
-        console.log ("Item received", item);
-
-        
-        await set(
-            `debug/${outer_key}`, 
-            _.remove(item, (value, key) => {
-                console.log (key, value, 'children');
-                return value === "children";
-            })
-        ).catch(e => console.warn(e)) ;
-        
-    });
-    */
 
     res.contentType('html')
             .status(200)
