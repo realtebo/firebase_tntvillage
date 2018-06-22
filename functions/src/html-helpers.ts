@@ -12,15 +12,16 @@ const parse = (page_content : string) : string  => {
     // Recupero le righe
     const rows : Cheerio = $('DIV.showrelease_tb TABLE TR');
     const mapped : any = rows.map( (row_index: number, element : CheerioElement) : any => {
+        const magnet_link = $(element).find("TD:nth-child(2) A").attr("href");
         const row_data =  { [row_index] : {
-            magnet_link     : $(element).find("TD:nth-child(2) A").attr("href"),
-            category_id     : $(element).find("TD:nth-child(3) A").attr("href"),
+            magnet_link     : magnet_link,
+            category_id     : new URL($(element).find("TD:nth-child(3) A").attr("href")).searchParams.get('cat'),
             leech_count     : $(element).find("TD:nth-child(4)").text(),
             seed_count      : $(element).find("TD:nth-child(5)").text(),
             // I dati seguenti sono nella stessa row ma è corretto
             title_children  : $(element).find("TD:nth-child(7)").children().length,
-            title_text      : $(element).find("TD:nth-child(7)").text,
-            title           : $(element).find("TD:nth-child(7) A").text,
+            title_link_text : $(element).find("TD:nth-child(7) A").text(),
+            title_text      : $(element).find("TD:nth-child(7)").text(),
         }};
         return row_data;
     }).get();   // non dimenticare MAI il get dopo un map quando usi Cheerio!
@@ -28,13 +29,8 @@ const parse = (page_content : string) : string  => {
     // solo per debug
     const html2 = [ 
 
-        $.html($("<H2>").html("parse 42")),
+        $.html($("<H2>").html("parse 45")),
 
-        $.html($("<H3>").html("Riga 1")),
-
-        $.html(
-            $("<PRE>").html( mapped[1] )
-        ),
         $.html(
             $("<PRE>").html(JSON.stringify(mapped[1], null, 2))
         )
