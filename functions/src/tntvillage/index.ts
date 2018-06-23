@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import * as _ from 'lodash';
-import Strings from './strings-helpers';
+import Strings from '../strings-helpers';
 
 const TNTVILLAGE_CATEGORY_CODES = {
     ANY : 0,
