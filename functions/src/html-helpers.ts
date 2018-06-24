@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 // https://nodejs.org/docs/latest-v6.x/api/url.html
 import { URL } from 'url';
 import { ResultPage } from './tntvillage';
-import ResultRow from  './objecsts/result-row';
+import ResultRow from  './objects/result-row';
 
 const getResultRowFromCheerioRowElement = ($ : CheerioStatic, element : CheerioElement) : ResultRow => {
         

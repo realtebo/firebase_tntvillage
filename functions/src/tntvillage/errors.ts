@@ -1,4 +1,4 @@
-import { Response } from './index';
+import Response from '../objects/response';
 
 /*###############################
   #     CUSTOM ERRORS

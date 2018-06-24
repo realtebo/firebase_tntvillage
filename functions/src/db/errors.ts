@@ -67,9 +67,17 @@ class InvalidStatusValueError extends StatusDbError {
     }
 }
 
+class RowNotSavedError extends DbError {
+    
+    constructor(message?: string) {
+        super(message);
+    }
+}
+
 export {
     InvalidStatusKeyError   as InvalidStatusKey,
     InvalidStatusValueError as InvalidStatusValue,
     KeyDoesNotExistsError   as KeyDoesNotExists,
     KeyAlreadyExistsError   as KeyAlreadyExists,    
+    RowNotSavedError        as RowNotSaved,
 };

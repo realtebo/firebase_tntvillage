@@ -1,8 +1,8 @@
 import { db } from '../app-helpers';
 import * as _ from "lodash";
-import ResultRow from '../objecsts/result-row';
-import ReleaseStats from '../objecsts/release-stats';
-import * as TNT from '../tntvillage';
+import ResultRow from '../objects/result-row';
+import ReleaseStats from '../objects/release-stats';
+import PostData from '../objects/post-data';
 import { database } from 'firebase-admin';
 import { DataSnapshot } from 'firebase-functions/lib/providers/database';
 import * as Err from './errors';
@@ -11,7 +11,7 @@ const TREE = {
     "STATISTICS" : {
         "ROOT" : '/statistiscs',
         "KEYS" : {
-            'WEB_PAGES'    : 'parsed',
+            'WEB_PAGES'    : 'web_pages',
             'WEB_RELEASES' : 'web_releases'
         }
     },
@@ -61,8 +61,13 @@ const setSinglePageStatus = async (page_number, status) => {
  ***************************/
 const saveTorrentRow = async (row: ResultRow) : Promise<void> => {
     
-    const hash: string = row.hash();
-    await db.ref(`${TREE.MAGNETS.ROOT}/${hash}`).set(row);
+    console.log ('saveTorrentRow v3');
+    try {
+        const hash: string = row.hash;
+        await db.ref(`${TREE.MAGNETS.ROOT}/${hash}`).set(row);
+    } catch (e) {
+        throw new Err.RowNotSaved(e);
+    }
 }
 
 /***************************
@@ -107,7 +112,7 @@ const emptyQueue = (queue_name : string) : Promise<void> => {
     return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}`).remove();
 }
 
-const enqueue = (queue_name : string, post_data: TNT.PostData)  : database.ThenableReference => {
+const enqueue = (queue_name : string, post_data: PostData)  : database.ThenableReference => {
     return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}`).push(post_data);
 }
 

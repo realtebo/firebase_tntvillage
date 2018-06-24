@@ -1,17 +1,30 @@
-import Strings from '../strings-helpers';
+import Strings  from '../strings-helpers';
 import { bucket } from '../app-helpers';
 import { File, ApiResponse, FileMetadata } from '@google-cloud/storage';
 import Err  from './errors';
+import Response from '../objects/response';
 
 /*#########################
  #      GESTIONE CACHE
  #########################*/
+
+ /**
+  * Scorcatoia
+  */
+ const saveResponse = (response : Response) : Promise<void>=> {
+    console.log(`saveRsponse v1`);
+    const file_path : string = response.cache_file_path;
+    console.log(`saveRsponse v1`, file_path);
+    return saveAsPageCache (response.html, file_path);
+ }
 
 /**
  * Salva il contenuto html nello storage come file di cache.
  * Restituisce l'oggetto File appena creato o aggiornato.
  */
 const saveAsPageCache = (html: string, cache_file_path: string) : Promise<void> => {
+
+    console.log(`saveAsPageCache v1 -  ${cache_file_path}`);
 
     if (html.length === 0) {
         throw new Err.EmptyContent(cache_file_path);
@@ -27,6 +40,8 @@ const saveAsPageCache = (html: string, cache_file_path: string) : Promise<void> 
 }
 
 const cacheFileExists = (page_number: number, category_number: number) : Promise<boolean> => {
+
+    console.log(`cacheFileExists v1 -  ${page_number} - ${category_number}`);
 
     const cache_file_path = Strings.getCachePathFromQuery(page_number, category_number);
     const cache_file = bucket.file(cache_file_path);
@@ -51,9 +66,11 @@ const cacheFileExists = (page_number: number, category_number: number) : Promise
  * errori.
  */
 const deleteCacheFileIfExists = (page_number: number, category_number: number) : Promise<boolean> => {
-    
-    const cache_file_path = Strings.getCachePathFromQuery(page_number, category_number);
-    const cache_file = bucket.file(cache_file_path);
+
+    console.warn(`deleteCacheFileIfExists v5 -  ${page_number} - ${category_number}`);
+
+    const cache_file_path : string = Strings.getCachePathFromQuery(page_number, category_number);
+    const cache_file      : File   = bucket.file(cache_file_path);
     
     // Delete cache file if exists
     return fileExists(cache_file)
@@ -144,7 +161,7 @@ const readFile = async ( path: string) : Promise<string> => {
 }
 
 export default { 
-    saveAsPageCache, 
+    saveAsPageCache, saveResponse,
     fileExists, cacheFileExists,
     removeFile, readFile,
     deleteCacheFileIfExists,
