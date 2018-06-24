@@ -81,19 +81,27 @@ exports.onRequestPageIndex = functions.database.ref(`${Db.TREE.STATUS.ROOT}/${Db
 * Gestisce la coda FORCE_DOWNLOAD
 * Scarica una pagina cancellandone la precedente cache se esistente
 */
-exports.onForceDownload_v13 = functions.database.ref(`${Db.TREE.QUEUES.ROOT}/${Db.TREE.QUEUES.KEYS.FORCE_DONWLOAD}/{push_id}`)
+exports.onForceDownload_v17 = functions.database.ref(`${Db.TREE.QUEUES.ROOT}/${Db.TREE.QUEUES.KEYS.FORCE_DONWLOAD}/{push_id}`)
     .onCreate( async (snapshot) :  Promise<void> => {
         
         const item_data : PostData     = snapshot.val();
         const { page_number, category} = item_data;
         const item_ref                 = snapshot.ref;
+
+        console.log("item_data", item_data);
+        console.log("item_ref", item_ref);
         
         try {
             const new_ref = await Db.moveQueuedItem(item_ref, `${Db.TREE.QUEUES.KEYS.DOWNLOADING}`);
-            await Storage.deleteCacheFileIfExists(page_number, category);
+            // await Storage.deleteCacheFileIfExists(page_number, category);
+
             // Non passato dalla stato DOWNLOADABLE, perchè la scarico a forza, e comunque
             // so già che NON ho in cache la pagina
+            console.log("before get Page");
             const response : Response = await getPage(page_number, category );
+            console.warn ('response recived');
+            console.warn(response);
+            console.log("after get Page");
             await Storage.saveResponse(response);
             await Db.moveQueuedItem(new_ref, `${Db.TREE.QUEUES.KEYS.TO_PARSE}`);
         } catch (reason) {

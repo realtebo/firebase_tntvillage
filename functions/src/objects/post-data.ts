@@ -21,7 +21,7 @@ export class PostData {
 
         const valid_cat_number = _.findKey(CATEGORIES, item_val => item_val === category);
         if (valid_cat_number === undefined) {
-            throw new Err.PostError(`Categoria ${category} non valida, usare una delle seguenti: ${CATEGORIES}`);
+            throw new Err.PostError(`Categoria ${category} non valida, usare una delle seguenti: ${CATEGORIES.ANY} o ${CATEGORIES.TV_SHOW}`);
         }
         this.category = category;
 

@@ -18,8 +18,10 @@ const getTvShowIndexPage = () : Promise<Response> => {
  * Restituisce il corpo della pagina oppure genera errore
  */
 const getPage = (page_number: number, category_number: number) : Promise<Response> => {
+    console.log (`getQuery v3: Page ${page_number} - Cat ${category_number}`)
     const post_data: PostData = new PostData(page_number, category_number);
     const tnt_query: Query = new Query(post_data);
+    console.log (`getQuery v3: tut ok`)
     return tnt_query.execute();
 }
 

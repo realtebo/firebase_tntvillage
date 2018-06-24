@@ -67,8 +67,9 @@ const cacheFileExists = (page_number: number, category_number: number) : Promise
  */
 const deleteCacheFileIfExists = (page_number: number, category_number: number) : Promise<boolean> => {
 
-    console.warn(`deleteCacheFileIfExists v5 -  ${page_number} - ${category_number}`);
-
+    console.warn(`deleteCacheFileIfExists v10 -  ${page_number} - ${category_number} - `+ (typeof Strings.getCachePathFromQuery));
+    return Promise.resolve(true);
+    /*
     const cache_file_path : string = Strings.getCachePathFromQuery(page_number, category_number);
     const cache_file      : File   = bucket.file(cache_file_path);
     
@@ -81,6 +82,7 @@ const deleteCacheFileIfExists = (page_number: number, category_number: number) :
             if (reason instanceof Err.FileNotExists) return true;
             throw reason;
         });
+    */
 }
 
 /*#########################

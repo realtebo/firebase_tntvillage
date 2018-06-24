@@ -112,18 +112,23 @@ const emptyQueue = (queue_name : string) : Promise<void> => {
     return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}`).remove();
 }
 
-const enqueue = (queue_name : string, post_data: PostData)  : database.ThenableReference => {
-    return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}`).push(post_data);
+const enqueue = (queue_name : string, post_data: PostData)  : Promise<void> => {
+    console.log (`enqueue v2 - ${post_data.toString()} `);
+    return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}/${post_data.toString()}`).set(post_data);
 }
 
 const deleteQueuedItem = (ref: database.Reference) : Promise<void> => {
+    console.log (`deleteQueuedItem v1 ${ref.key} `);
     return ref.remove();
 };
 
 const moveQueuedItem = async (old_ref : database.Reference, new_queue: string) : Promise<database.Reference> => {
     
     const snapshot : DataSnapshot = await old_ref.once('value');
-    const new_ref : database.Reference = await db.ref(`${TREE.QUEUES.ROOT}/${new_queue}`).push(snapshot.val());
+    const key      : string       = snapshot.key;
+    console.log (`moveQueuedItem v4 ${key} to ${new_queue} `);
+    const new_ref : database.Reference = await db.ref(`${TREE.QUEUES.ROOT}/${new_queue}/${key}`)
+    new_ref.set(snapshot.val());
     await old_ref.remove();
     return new_ref;
 }
