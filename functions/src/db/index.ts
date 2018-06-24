@@ -1,14 +1,18 @@
-import { db } from './app-helpers';
+import { db } from '../app-helpers';
 import * as _ from "lodash";
-import { PostData } from './tntvillage';
+import ResultRow from '../objecsts/result-row';
+import ReleaseStats from '../objecsts/release-stats';
+import * as TNT from '../tntvillage';
 import { database } from 'firebase-admin';
 import { DataSnapshot } from 'firebase-functions/lib/providers/database';
+import * as Err from './errors';
 
 const TREE = {
-    "DEBUG" :  {
-        "ROOT" : '/status',
+    "STATISTICS" : {
+        "ROOT" : '/statistiscs',
         "KEYS" : {
-            'PARSED' : 'parsed'
+            'WEB_PAGES'    : 'parsed',
+            'WEB_RELEASES' : 'web_releases'
         }
     },
     "STATUS" : {
@@ -35,6 +39,9 @@ const TREE = {
             "TO_PARSE"          : 'to_parse',
             "PARSING"           : "parsing",
         }
+    },
+    "MAGNETS" : {
+        "ROOT" : '/queues',   
     }
 };
 
@@ -48,36 +55,41 @@ const setSinglePageStatus = async (page_number, status) => {
 }
 */
 
-/***************************
- *      LOW LEVEL
- ***************************/
-
-const set = async ( path, val) => {
-    await db.ref(path).set(val);
-}
-
-const remove = async ( key_to_remove ) => {
-    await db.ref(key_to_remove).remove();
-}
-
 
 /***************************
- *      QUEUE HANDLING
+ *      TORRENT DATA
  ***************************/
+const saveTorrentRow = async (row: ResultRow) : Promise<void> => {
+    
+    const hash: string = row.hash();
+    await db.ref(`${TREE.MAGNETS.ROOT}/${hash}`).set(row);
+}
 
+/***************************
+ *      STATISTICS
+ ***************************/
+const saveGlobalStats = async (stats : ReleaseStats ) : Promise<boolean> => {
+    await db.ref(`${TREE.STATISTICS.ROOT}/${TREE.STATISTICS.KEYS.WEB_PAGES}`).set(stats.page_count);
+    await db.ref(`${TREE.STATISTICS.ROOT}/${TREE.STATISTICS.KEYS.WEB_RELEASES}`).set(stats.release_count);
+    return true;
+}
+
+/***************************
+ *      STATUS HANDLING
+ ***************************/
 const saveStatus = ( status_name, status_value ) : Promise<void> => {
 
     // search key by value
     const valid_status_name = _.findKey(TREE.STATUS.KEYS, item_status_name => item_status_name === status_name);
     if ( !valid_status_name ) {
-        throw new InvalidStatusKeyError(status_name);
+        throw new Err.InvalidStatusKey(status_name);
     }
 
     if (TREE.STATUS.KEY_VALUES[status_name]) {
         // Se ho l'elenco dei valori validi, verifoc che quello passato sia uno di quelli validi
         const valid_status_value = _.findKey(TREE.STATUS.KEY_VALUES[valid_status_name], item_status_value  => item_status_value === status_value);
         if ( !valid_status_value) {
-            throw new InvalidStatusValueError(status_name, status_value);
+            throw new Err.InvalidStatusValue(status_name, status_value);
         }
     }
 
@@ -88,11 +100,14 @@ const deleteStatusName = (status_name : string) : Promise<void> => {
     return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).remove();
 }
 
+/***************************
+ *      QUEUE HANDLING
+ ***************************/
 const emptyQueue = (queue_name : string) : Promise<void> => {
     return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}`).remove();
 }
 
-const enqueue = (queue_name : string, post_data: PostData)  : database.ThenableReference => {
+const enqueue = (queue_name : string, post_data: TNT.PostData)  : database.ThenableReference => {
     return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}`).push(post_data);
 }
 
@@ -108,11 +123,9 @@ const moveQueuedItem = async (old_ref : database.Reference, new_queue: string) :
     return new_ref;
 }
 
-
 /***************************
  *         STATUS
  ***************************/
-
 const updateReleaseCount = (release_count : number) : Promise<void> => {
     const status_name = TREE.STATUS.KEYS.RELEASE_COUNT;
     return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).set(release_count);
@@ -122,7 +135,7 @@ const getStatusValue = ( status_name : string ) : Promise<string> => {
     return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).once("value")
         .then( (snapshot) => {
             if ( !snapshot.exists() ) {
-                throw new KeyDoesNotExistsError(status_name);
+                throw new Err.KeyDoesNotExists(status_name);
             }
             return snapshot.val();
         });
@@ -131,10 +144,10 @@ const getStatusValue = ( status_name : string ) : Promise<string> => {
  const failIfStateExists = (status_name : string) : Promise<void> => {
     return  getStatusValue(status_name)
         .then( () => {
-            throw new KeyAlreadyExistsError(status_name);
+            throw new Err.KeyAlreadyExists(status_name);
         })
         .catch( reason => {
-            if (reason instanceof KeyDoesNotExistsError) {
+            if (reason instanceof Err.KeyDoesNotExists) {
                 // Assorbo l'errore, perchè per questa function è
                 // ok se la chiave  NON esiste
                 return;
@@ -144,81 +157,14 @@ const getStatusValue = ( status_name : string ) : Promise<string> => {
 }
 
 
-/***************************
- *      CUSTOM ERRORS
- ***************************/
 
-abstract class DbError extends Error {
 
-};
-abstract class KeyDbError extends DbError {
-    
-    readonly key: string = '';
-
-    constructor(key : string, message?: string) {
-        super(message);
-        this.key = key;
-    }
-};
-class KeyAlreadyExistsError extends KeyDbError {
-    
-    readonly name="KeyAlreadyExistsError";
-
-    toString() : String {
-        if (this.message) { return super.toString() };
-        return `${this.name}: La chiave ${this.key} esiste già`;
-    }
-};
-class KeyDoesNotExistsError extends KeyDbError {
-
-    readonly name="KeyDoesNotExistsError";
-
-    toString() : String {
-        if (this.message) { return super.toString() };
-        return `${this.name}: La chiave ${this.key} non esiste`;
-    }
-};
-abstract class StatusDbError extends DbError {
-    
-    protected status_name: string = '';
-
-    constructor(status_name : string, message?: string) {
-        super(message);
-        this.status_name = status_name;
-    }
-};
-class InvalidStatusKeyError extends StatusDbError {
-    
-    readonly name = "InvalidStatusKeyError";
-
-    toString() : String {
-        if (this.message) { return super.toString() };
-        return `${this.name}: lo stato ${this.status_name} non è valido`;
-    }
-}
-class InvalidStatusValueError extends StatusDbError {
-    
-    readonly status_value : string;
-    readonly name = "InvalidStatusValueError";
-
-    constructor(status_name : string, status_value : string, message?: string) {
-        super(message);
-        this.status_name = status_name;
-        this.status_value = status_value;
-    }
-
-    toString() : String {
-        if (this.message) { return super.toString() };
-        return `${this.name}: ${this.status_name} non prevede il valore ${this.status_value}`;
-    }
-}
-
-export { 
+export default { 
     TREE,
-    set, remove,
+    saveTorrentRow,
     // removeNode, mustUpdateCache, getStatusValue,
     deleteStatusName, 
     saveStatus, failIfStateExists, updateReleaseCount,
     emptyQueue, enqueue, moveQueuedItem, deleteQueuedItem,
-    KeyAlreadyExistsError
+    saveGlobalStats
 };

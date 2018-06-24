@@ -1,29 +1,41 @@
 import axios, { AxiosResponse } from 'axios';
 import * as _ from 'lodash';
 import Strings from '../strings-helpers';
+import * as Err  from './errors';
+import ResultRow from  '../objecsts/result-row';
 
-const TNTVILLAGE_CATEGORY_CODES = {
+export const CATEGORIES = {
     ANY : 0,
     TV_SHOW : 29
 };
 
-const TNTVILLAGE_QUERY_BASE_URL = 'http://www.tntvillage.scambioetico.org/src/releaselist.php';
+export const QUERY_BASE_URL = 'http://www.tntvillage.scambioetico.org/src/releaselist.php';
+
+export class ResultPage {
+    constructor(
+        readonly result_rows: ResultRow[], 
+        readonly total_pages: number, 
+        readonly total_releases: number
+    ){};
+}
+
+
 
 /**
  * Oggetto usato per recuperare i dati da TNTVillage
  */
-class TntVillageQuery {
+export class Query {
 
-    private readonly post_data: TntVillagePostData;
+    private readonly post_data: PostData;
 
-    constructor(post_data: TntVillagePostData) {
+    constructor(post_data: PostData) {
         this.post_data = post_data;
     }
 
     /**
      * Scarica una pagina da TNTVillage
      */
-    public execute() : Promise<TntVillageResponse> {
+    public execute() : Promise<Response> {
 
         const config = {
             headers: {
@@ -34,14 +46,14 @@ class TntVillageQuery {
         }
         const data_to_post = this.post_data.toString();
 
-        // console.log (`base url: ${TNTVILLAGE_QUERY_BASE_URL}`);
+        // console.log (`base url: ${QUERY_BASE_URL}`);
         // console.log (`data_to_post: ${data_to_post}`);
 
-        return axios.post(TNTVILLAGE_QUERY_BASE_URL, data_to_post, config)
+        return axios.post(QUERY_BASE_URL, data_to_post, config)
             .then( response => {
-                const tntResponse = new TntVillageResponse( this.post_data, response);
+                const tntResponse = new Response( this.post_data, response);
                 if (response.status !== 200) {
-                    throw new TntVillaStatusCodeError(tntResponse);
+                    throw new Err.StatisCodeError(tntResponse);
                 }
                 return tntResponse;
             })
@@ -52,7 +64,7 @@ class TntVillageQuery {
 /**
  * Incapsula i dati per una query (i dati postati)
  */
-class TntVillagePostData {
+export class PostData {
 
     public readonly page_number: number;
     public readonly category: number;
@@ -61,13 +73,13 @@ class TntVillagePostData {
     constructor(page_number: number, category: number, search: string = '') {
 
         if (page_number <=0) {
-            throw new TntVillagePostError(`${page_number} non valido`);
+            throw new Err.PostError(`${page_number} non valido`);
         } 
         this.page_number = page_number;
 
-        const valid_cat_number = _.findKey(TNTVILLAGE_CATEGORY_CODES, item_val => item_val === category);
+        const valid_cat_number = _.findKey(CATEGORIES, item_val => item_val === category);
         if (valid_cat_number === undefined) {
-            throw new TntVillagePostError(`Categoria ${category} non valida, usare una delle seguenti: ${TNTVILLAGE_CATEGORY_CODES}`);
+            throw new Err.PostError(`Categoria ${category} non valida, usare una delle seguenti: ${CATEGORIES}`);
         }
         this.category = category;
 
@@ -80,7 +92,7 @@ class TntVillagePostData {
 
     get cache_file_path(): string {
         const path : string = Strings.getCachePathFromQuery(this.page_number, this.category);
-        console.warn ('TntVillagePostData cache_file_path', this.page_number, this.category, path);
+        console.warn ('PostData cache_file_path', this.page_number, this.category, path);
         return path;
     }
 }
@@ -89,14 +101,14 @@ class TntVillagePostData {
  * Incapsula i dati della query (i dati postati) e del response 
  * come restituito da Axios
  */
-class TntVillageResponse {
-    public readonly post_data : TntVillagePostData;
+export class Response {
+    public readonly post_data : PostData;
     public readonly status: number;
     public readonly status_text: string;
     public readonly data: string;
     public readonly data_length: string;
 
-    constructor(post_data: TntVillagePostData, response: AxiosResponse) {
+    constructor(post_data: PostData, response: AxiosResponse) {
         this.post_data = post_data;
         this.status = response.status;
         this.status_text = response.statusText;
@@ -118,56 +130,4 @@ class TntVillageResponse {
         return Strings.getCachePathFromQuery(this.post_data.page_number, this.post_data.category);
     }
 }
-
-/**
- * Dati estrapolati da una pagina
- */
-class TntVillagePageContent {
-    constructor (
-        readonly table_content: any, 
-        readonly total_pages: number, 
-        readonly total_releases: number
-    ) {};
-}
-
-
-/*###############################
-  #     CUSTOM ERRORS
-  ##############################*/
-
-class TntVillagePostError extends Error {
-
-    readonly name : string = "TntVillageResponseError";
-}
-
-abstract class TntVillageResponseError extends Error {
-
-    readonly name : string = "TntVillageResponseError";
-    readonly response: TntVillageResponse;
-
-    constructor(response: TntVillageResponse, message?: string) {
-        super(message);
-        this.response = response;
-    }
-}
-
-class TntVillaStatusCodeError extends TntVillageResponseError {
-    
-    readonly name : string = "TntVillaStatusCodeError";
-
-    toString() {
-        if (this.message) { return super.toString() };
-        return `${this.name}: Ricevuto stato HTTP ${this.response.status} nel caricare la pagina ${this.response.post_data.page_number}`;
-    }
-}
-
-export { 
-    TntVillagePostError as Error, 
-    TNTVILLAGE_CATEGORY_CODES as CATEGORIES,
-    TntVillageQuery as Query,
-    TntVillagePostData as PostData,
-    TntVillageResponse as Response,
-    TntVillagePageContent as PageContent,
- };
-
 

@@ -12,11 +12,13 @@
   "main": "lib/index.js",
   "dependencies": {
     "@google-cloud/storage": "^1.7.0",
+    "@types/uuid": "^3.4.3",
     "axios": "^0.18.0",
     "cheerio": "^1.0.0-rc.2",
     "firebase-admin": "^5.12.1",
     "firebase-functions": "^1.1.0",
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.10",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.7",
