@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import Strings from '../strings-helpers';
+import * as Strings from '../strings-helpers';
 import * as Err from '../tntvillage/errors';
 import { CATEGORIES } from '../tntvillage';
 
@@ -34,7 +34,7 @@ export class PostData {
 
     get cache_file_path(): string {
         const path : string = Strings.getCachePathFromQuery(this.page_number, this.category);
-        console.warn ('PostData cache_file_path', this.page_number, this.category, path);
+        //console.warn ('PostData cache_file_path', this.page_number, this.category, path);
         return path;
     }
 }

@@ -1,6 +1,7 @@
-import Strings from '../strings-helpers';
+import * as Strings from '../strings-helpers';
 import { PostData } from './post-data';
 import { AxiosResponse } from 'axios';
+
 
 /**
  * Incapsula i dati della query (i dati postati) e del response 

@@ -4,13 +4,14 @@ const pad = (num:number, size:number): string => {
     return s;
 };
 
-const getCachePathFromQuery = (page_number: number, category_number: number): string => {
-    const padded_page_number     = pad(page_number, 5);
-    const padded_category_number = pad(category_number, 2);
-    return `/category-${padded_category_number}/page-${padded_page_number}.html`;
+const getCachePathFromQuery = (page_number: number, category_number: number) : string => {
+    const padded_page_number     : string = pad(page_number, 5);
+    const padded_category_number : string = pad(category_number, 2);
+    const out : string = `/category-${padded_category_number}/page-${padded_page_number}.html`;
+    return out;
 }
 
-export default { 
+export { 
     getCachePathFromQuery, 
     pad 
 }

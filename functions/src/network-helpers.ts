@@ -15,17 +15,21 @@ const getTvShowIndexPage = () : Promise<Response> => {
 /**
  * Scarica una pagina da TNTVillage 
  * Non verifica l'attuale stato della cache
- * Restituisce il corpo della pagina oppure genera errore
+ * Non genera errore
  */
-const getPage = (page_number: number, category_number: number) : Promise<Response> => {
-    console.log (`getQuery v3: Page ${page_number} - Cat ${category_number}`)
+const getPage = async (page_number: number, category_number: number) : Promise<Response> => {
+    // console.log (`getPage: Page ${page_number} - Cat ${category_number}`)
     const post_data: PostData = new PostData(page_number, category_number);
     const tnt_query: Query = new Query(post_data);
-    console.log (`getQuery v3: tut ok`)
-    return tnt_query.execute();
+    const response : Response = await tnt_query.execute();
+    if (response.status !== 200 ) {
+        console.warn ('errore in getPage', response);
+    }
+    return response;
 }
 
 export { 
     getPage,
-    getTvShowIndexPage
+    getTvShowIndexPage,
+
 };

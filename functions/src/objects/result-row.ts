@@ -1,5 +1,63 @@
 import * as uuidv5 from 'uuid/v5';
 
+interface json_fmt {
+    magnet : string,
+    title  : string,
+    info   : string,
+    discard_reason? : string,
+    notified? : boolean,
+};
+
+class SimplyResultRow{
+
+    private magnet : string;
+    private title  : string;
+    public info   : string;
+    public discard_reason : string;
+    public notified : boolean;
+
+  
+    constructor(json : json_fmt){
+        this.magnet = json.magnet;
+        this.title  = json.title;
+        this.info   = json.info;
+        if (json.discard_reason) {
+            this.discard_reason = json.discard_reason;
+        }
+        if (json.notified) {
+            this.notified = json.notified;
+        }
+    };
+
+    get hash () : string {
+        const out : string = uuidv5(this.magnet, uuidv5.URL).split("-").join("/");
+        return out;
+    };   
+
+    get discarded() : boolean {
+        return (typeof this.discard_reason !== 'undefined');
+    }
+
+    public toString = () : string =>  {
+        return this.title + "\n" + this.info + (this.discard_reason ? "\n" + "Scatato perchè: " + this.discard_reason : "");
+    }
+
+    public toJson = () : json_fmt => {
+        const out  : json_fmt = {
+            "magnet" : this.magnet, 
+            "title" : this.title, 
+            "info" : this.info, 
+        };
+        if (this.discard_reason) {
+            out.discard_reason = this.discard_reason;
+        }
+        if (this.notified) {
+            out.notified = this.notified;
+        }
+        return out;
+    }
+}
+
 class ResultRow {
 
     readonly magnet_link: string;
@@ -30,5 +88,7 @@ class ResultRow {
         return out;
     };
 }
+
+export { SimplyResultRow, json_fmt };
 
 export default ResultRow;

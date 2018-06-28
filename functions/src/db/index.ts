@@ -19,8 +19,6 @@ const TREE = {
         "ROOT" : '/status',
         "KEYS" : {
             "GET_PAGE_INDEX" : 'getPageIndex',
-            "RELEASE_COUNT"  : 'releaseCount',
-            "TOTAL_PAGES"    : 'totalPages',
         },
         "KEY_VALUES" : {
             "GET_PAGE_INDEX" : {
@@ -41,7 +39,7 @@ const TREE = {
         }
     },
     "MAGNETS" : {
-        "ROOT" : '/queues',   
+        "ROOT" : '/magnets',   
     }
 };
 
@@ -59,13 +57,14 @@ const setSinglePageStatus = async (page_number, status) => {
 /***************************
  *      TORRENT DATA
  ***************************/
-const saveTorrentRow = async (row: ResultRow) : Promise<void> => {
+const saveTorrentRow = (row: ResultRow) : Promise<void> => {
     
-    console.log ('saveTorrentRow v3');
+    // console.log ('saveTorrentRow v6');
     try {
         const hash: string = row.hash;
-        await db.ref(`${TREE.MAGNETS.ROOT}/${hash}`).set(row);
+        return db.ref(`${TREE.MAGNETS.ROOT}/${hash}`).set(row);
     } catch (e) {
+        console.warn(' row cannot be saved', typeof row, row);
         throw new Err.RowNotSaved(e);
     }
 }
@@ -77,6 +76,11 @@ const saveGlobalStats = async (stats : ReleaseStats ) : Promise<boolean> => {
     await db.ref(`${TREE.STATISTICS.ROOT}/${TREE.STATISTICS.KEYS.WEB_PAGES}`).set(stats.page_count);
     await db.ref(`${TREE.STATISTICS.ROOT}/${TREE.STATISTICS.KEYS.WEB_RELEASES}`).set(stats.release_count);
     return true;
+}
+
+const getPageCount = async () : Promise<number> => {
+    const page_count : DataSnapshot = await db.ref(`${TREE.STATISTICS.ROOT}/${TREE.STATISTICS.KEYS.WEB_PAGES}`).once('value')
+    return page_count.val();
 }
 
 /***************************
@@ -113,7 +117,7 @@ const emptyQueue = (queue_name : string) : Promise<void> => {
 }
 
 const enqueue = (queue_name : string, post_data: PostData)  : Promise<void> => {
-    console.log (`enqueue v2 - ${post_data.toString()} `);
+    // console.log (`enqueue v2 - ${post_data.toString()} `);
     return db.ref(`${TREE.QUEUES.ROOT}/${queue_name}/${post_data.toString()}`).set(post_data);
 }
 
@@ -126,7 +130,7 @@ const moveQueuedItem = async (old_ref : database.Reference, new_queue: string) :
     
     const snapshot : DataSnapshot = await old_ref.once('value');
     const key      : string       = snapshot.key;
-    console.log (`moveQueuedItem v4 ${key} to ${new_queue} `);
+    // console.log (`moveQueuedItem v4 ${key} to ${new_queue} `);
     const new_ref : database.Reference = await db.ref(`${TREE.QUEUES.ROOT}/${new_queue}/${key}`)
     new_ref.set(snapshot.val());
     await old_ref.remove();
@@ -136,10 +140,7 @@ const moveQueuedItem = async (old_ref : database.Reference, new_queue: string) :
 /***************************
  *         STATUS
  ***************************/
-const updateReleaseCount = (release_count : number) : Promise<void> => {
-    const status_name = TREE.STATUS.KEYS.RELEASE_COUNT;
-    return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).set(release_count);
-}
+
 
 const getStatusValue = ( status_name : string ) : Promise<string> => {
     return db.ref(`${TREE.STATUS.ROOT}/${status_name}`).once("value")
@@ -174,7 +175,7 @@ export default {
     saveTorrentRow,
     // removeNode, mustUpdateCache, getStatusValue,
     deleteStatusName, 
-    saveStatus, failIfStateExists, updateReleaseCount,
+    saveStatus, failIfStateExists, 
     emptyQueue, enqueue, moveQueuedItem, deleteQueuedItem,
-    saveGlobalStats
+    saveGlobalStats, getPageCount
 };

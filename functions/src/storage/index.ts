@@ -1,22 +1,13 @@
-import Strings  from '../strings-helpers';
+import * as Strings  from '../strings-helpers';
 import { bucket } from '../app-helpers';
 import { File, ApiResponse, FileMetadata } from '@google-cloud/storage';
 import Err  from './errors';
-import Response from '../objects/response';
+
 
 /*#########################
  #      GESTIONE CACHE
  #########################*/
 
- /**
-  * Scorcatoia
-  */
- const saveResponse = (response : Response) : Promise<void>=> {
-    console.log(`saveRsponse v1`);
-    const file_path : string = response.cache_file_path;
-    console.log(`saveRsponse v1`, file_path);
-    return saveAsPageCache (response.html, file_path);
- }
 
 /**
  * Salva il contenuto html nello storage come file di cache.
@@ -39,6 +30,11 @@ const saveAsPageCache = (html: string, cache_file_path: string) : Promise<void> 
     return cache_file.save(html, cache_file_options);
 }
 
+/**
+ * Restituisce true se il file corrispondente esiste
+ * @param page_number 
+ * @param category_number 
+ */
 const cacheFileExists = (page_number: number, category_number: number) : Promise<boolean> => {
 
     console.log(`cacheFileExists v1 -  ${page_number} - ${category_number}`);
@@ -65,24 +61,23 @@ const cacheFileExists = (page_number: number, category_number: number) : Promise
  * Se il file non esisteva, restituisce true, senza generare
  * errori.
  */
-const deleteCacheFileIfExists = (page_number: number, category_number: number) : Promise<boolean> => {
+const deleteCacheFileIfExists = async (page_number: number, category_number: number) : Promise<boolean> => {
 
-    console.warn(`deleteCacheFileIfExists v10 -  ${page_number} - ${category_number} - `+ (typeof Strings.getCachePathFromQuery));
-    return Promise.resolve(true);
-    /*
+    // console.warn('deleteCacheFileIfExists v11 ', page_number, category_number);
+
     const cache_file_path : string = Strings.getCachePathFromQuery(page_number, category_number);
     const cache_file      : File   = bucket.file(cache_file_path);
     
-    // Delete cache file if exists
-    return fileExists(cache_file)
-        .then( () => {
-            return removeFile (cache_file);
-        })
-        .catch( reason => {
-            if (reason instanceof Err.FileNotExists) return true;
-            throw reason;
-        });
-    */
+
+    try {
+        const exists  : boolean = await fileExists(cache_file);
+        const removed : boolean = await removeFile (cache_file);
+        return removed;
+    } catch( reason ) {
+        if (reason instanceof Err.FileNotExists) return true;
+        throw reason;
+    }
+    
 }
 
 /*#########################
@@ -163,7 +158,7 @@ const readFile = async ( path: string) : Promise<string> => {
 }
 
 export default { 
-    saveAsPageCache, saveResponse,
+    saveAsPageCache,
     fileExists, cacheFileExists,
     removeFile, readFile,
     deleteCacheFileIfExists,

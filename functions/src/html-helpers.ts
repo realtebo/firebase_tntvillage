@@ -35,8 +35,14 @@ const parse = (page_content : string) : ResultPage  => {
     $('DIV.showrelease_tb TABLE TR').each( (index :number, element: CheerioElement) : void => {
 
         let row : ResultRow;
+        if (index ===0) return;
         try {
             row = getResultRowFromCheerioRowElement($, element);
+            if (row.magnet_link === undefined) {
+                console.warn($.html(element));
+                console.warn(index);
+            }
+
         } catch (e) {
             throw new ParseError(index, "Errore non riconosciuto #1 " + e.message);
         }
