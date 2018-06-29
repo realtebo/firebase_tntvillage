@@ -1,4 +1,4 @@
-import { PostData } from './post-data';
+import PostData from './post-data';
 import { AxiosResponse } from 'axios';
 
 

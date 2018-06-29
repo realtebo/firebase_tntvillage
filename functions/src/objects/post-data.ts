@@ -1,10 +1,8 @@
-import * as Err from '../tntvillage/errors';
-
 /**
  * Incapsula i dati per una query (i dati postati)
  */
 
-export class PostData {
+class PostData {
 
     public readonly page_number: number;
     public readonly category: number;
@@ -13,7 +11,7 @@ export class PostData {
     constructor(page_number: number, category: number, search: string = '') {
 
         if (page_number <=0) {
-            throw new Err.PostError(`${page_number} non valido`);
+            throw new Error(`${page_number} non valido`);
         } 
         this.page_number = page_number;
 

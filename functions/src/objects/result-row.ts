@@ -13,8 +13,8 @@ interface json_fmt {
 
 class SimplyResultRow{
 
-    private magnet : string;
-    private title  : string;
+    public magnet : string;
+    public title  : string;
     public info   : string;
     public tech_data : string;
     public discard_reason : string;
@@ -53,6 +53,13 @@ class SimplyResultRow{
                 + "\n" + this.info 
                 + "\n" + this.last_seen
                 + (this.discard_reason ? "\n" + "Scatato perchè: " + this.discard_reason : "");
+    }
+
+    public toHtml = () : string => {
+        return "<b>" + this.title + "</b>"
+            + "\n" + this.episodes
+            + "\n" + this.tech_data
+            + "\n" + this.info ;
     }
 
     public toJson = () : json_fmt => {
