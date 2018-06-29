@@ -3,14 +3,6 @@
 import Response from './objects/response';
 import PostData from './objects/post-data';
 import Query from './objects/query';
-import { CATEGORIES } from './tntvillage';
-
-/**
- * Shortcut per `getPage(1, CATEGORIES.TV_SHOW)`;
- */
-const getTvShowIndexPage = () : Promise<Response> => {
-    return getPage(1, CATEGORIES.TV_SHOW);
-}
 
 /**
  * Scarica una pagina da TNTVillage 
@@ -30,6 +22,4 @@ const getPage = async (page_number: number, category_number: number) : Promise<R
 
 export { 
     getPage,
-    getTvShowIndexPage,
-
 };

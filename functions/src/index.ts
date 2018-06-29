@@ -1,78 +1,85 @@
-import * as _ from 'lodash';
 import * as functions from 'firebase-functions';
-/*
-import { database } from 'firebase-admin';
-
-import * as TNT from './tntvillage';
-import Storage from './storage';
-import Db from './db';
-*/
 import * as network from './network-helpers';
-/*
-import Html from './html-helpers';
-import * as Strings from './strings-helpers';
+import * as _ from 'lodash';
 
-import PostData from './objects/post-data';
-*/
 import Response from './objects/response';
-// import ResultRow from  './objects/result-row';
 import {SimplyResultRow, json_fmt} from  './objects/result-row';
-import axios  from 'axios';
+import axios, { AxiosError }  from 'axios';
 
 import * as cheerio from 'cheerio';
 import { db } from './app-helpers';
+
+import * as util from 'util';
+import * as uuidv5 from 'uuid/v5';
 
 const BOT_TOKEN = "605738929:AAG572LSUSUzbVLB-s0ewIQ5LiYK7vTod-s";
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}/`;
 const MIRKO = 315996772;
 const RITA  = 108691956; 
 
-const refresh = async () => {
+const refresh = async () : Promise<boolean> => {
 
-    await sendToMirko("Refreshing v7");
+    const snapshot = await db.ref('refresh').once('value');
+    if (snapshot.exists()) return false; 
 
-    const snapshot = await db.ref('/refresh').once('value');
-    if (snapshot.val() === true) {
-        return sendToMirko("Sto già refreshando");
-    }
-
-    await db.ref('/refresh').set(true);
-
+    await db.ref('refresh').set(true);
 
     const response : Response = await network.getPage(1, 29 );
     const $ : CheerioStatic   = cheerio.load(response.html);
     const rows : Cheerio      = $('DIV.showrelease_tb TABLE TR:not(:first-child)');
 
-    rows.each( async (index :number, element: CheerioElement) : Promise<void> => {
+    await rows.each( async (index :number, element: CheerioElement) : Promise<void> => {
         const magnet      : string = $(element).find("TD:nth-child(2) A").attr("href").trim();
-        const title       : string = $(element).find("TD:nth-child(7) A").text().trim();
-        const info        : string = $(element).find("TD:nth-child(7) ").clone().children().remove().end().text().trim();
+        let title         : string = $(element).find("TD:nth-child(7) A").text().trim();
+        let info          : string = $(element).find("TD:nth-child(7) ").clone().children().remove().end().text().trim();
 
-        const json : json_fmt = {info, title, magnet};
-        
-        const hash : string = new SimplyResultRow(json).hash;
+        // Rimuovo numero di serie e numero di episodio (anche in range opzionale)
+        const episodes    : string  = title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9](-[0-9][0-9])?/ig)[0].trim();
+        title                       = title.replace(episodes, "").trim();
 
-        await db.ref(`/rows/${hash}`).update(json);
+        // Separo le info tecniche dalle altre note
+        const matches               = info.match(/\[[^\]]*\]/ig);  
+        const tech_data   : string  = (matches ? matches[0] : "").trim();
+        info                        = info.replace(tech_data, "").trim();
+
+        const json : json_fmt = {info, title, magnet, episodes, tech_data};
+        const row : SimplyResultRow = new SimplyResultRow(json);
+        const hash : string = row.hash;
+
+        // console.log ("Aggiorno ", hash);
+        await db.ref(`rows/${hash}`).update(row.toJson());
     });
+        
+    await db.ref('refresh').remove();
 
-    await sendToMirko("Refreshed");
-
-    await db.ref('/refresh').remove();
+    return true;
 }
     
-const english_movies : string[] = [
-    "[XviD - Eng Ac3 - Sub Ita Eng]",
-];
+const sendNotificationForHash = async (hash : string) : Promise<void> => {
 
-const sendNotification = async (message: string) : Promise<void> => {
+    const hash_path : string = hash.split("-").join("/");
+
+    const episode = await db.ref(`rows/${hash_path}`).once('value');
+    const row : SimplyResultRow = new SimplyResultRow(episode.val());
+
+    // console.log (`sendNotificationForHash ${hash} - Notifica da inviare ${row.toString()}`);
+
+    const keyboard = { "inline_keyboard" : [  
+        [
+         { "text": "E' in inglese",  "callback_data" :  `command=is_english&hash=${hash_path}`	},
+         // { "text": "Ignora serie",  "callback_data" :  `command=ignore_show&hash=${hash_path}` },
+         // { "text": "Ignora stagione",  "callback_data" :  `command=ignor_season&hash=${hash_path}` }
+       ]
+    ]};
 
     const reply_telegram = {
-        "text"    : message,
+        "text"    : row.toString(),
         "chat_id" : MIRKO,
+        "reply_markup" : keyboard,
     }
     await axios.post(TELEGRAM_API + "sendMessage", reply_telegram);
     reply_telegram.chat_id = RITA;
-    // await axios.post(TELEGRAM_API + "sendMessage", reply_telegram);
+    await axios.post(TELEGRAM_API + "sendMessage", reply_telegram);
 }
 
 const sendToMirko = async (message: string) : Promise<void> => {
@@ -83,6 +90,18 @@ const sendToMirko = async (message: string) : Promise<void> => {
     await axios.post(TELEGRAM_API + "sendMessage", reply_telegram);
 }
 
+// Chiamato da https://cron-job.org/
+exports.refresh = functions.https.onRequest( async (req, res) => {
+    const result: boolean = await refresh();
+    if (!result) {
+        res.status(500).send("Errore nel refresh via cronjob");
+        return;
+    } else {
+        res.status(200).send("Cronjob refresh ok");
+    }
+});
+
+// Risponde agli eventi di Telegram
 exports.callback = functions.https.onRequest( async (req, res) => {
 
     const body = req.body;
@@ -94,252 +113,159 @@ exports.callback = functions.https.onRequest( async (req, res) => {
             // Lo accetto solo da Mirko
             if (body.message.from.id === MIRKO) {
                 await sendToMirko("Ricevuto comando di refresh Da Mirko");
-                await refresh();
+                const result: boolean = await refresh();
+                if (!result) {
+                    res.status(500).send("Errore nel refresh");
+                    return;
+                }
             } else {
-                await sendToMirko("Mittente non approvato: " + JSON.stringify(body.message.from) );    
+                await sendToMirko("Mittente non approvato per questo comando: " + JSON.stringify(body.message.from) );    
             }
         } else {
             await sendToMirko("Comando sconosciuto: " + body.message.text);
         }
+    // Messaggio diretto
+    } else if (body.callback_query) {
+
+        console.log(body.callback_query);
+
+        const command =_.chain(req.body.callback_query.data)
+            .split('&')                         // ["a=b454","c=dhjjh","f=g6hksdfjlksd"]
+            .map(_.partial(_.split, _, '=', 2)) // [["a","b454"],["c","dhjjh"],["f","g6hksdfjlksd"]]
+            .fromPairs()                        // {"a":"b454","c":"dhjjh","f":"g6hksdfjlksd"}
+            .value();
+        if (command.command === 'is_english') {
+            await saveEnglishPattern(
+                command.hash, 
+                body.callback_query.from, 
+                body.callback_query.message.chat.id, 
+                body.callback_query.message.message_id
+            );
+            // await sendToMirko("Callback is_english\n" + util.inspect(command) + "\n" + );
+        } else {
+            await sendToMirko("Callback query non implementata\n" + util.inspect(command));
+        }
     } else {
-        await sendToMirko("Non è un messaggio diretto: " + JSON.stringify(req.body));
+        await sendToMirko("Messaggio sconosciuto: " + JSON.stringify(req.body));
     }
 
     res.send("ok");
     
 });
 
-exports.onRowChanged_v20 = functions.database.ref(`rows/{hash-segment-1}/{hash-segment-2}/{hash-segment-3}/{hash-segment-4}/{hash-segment-5}`)
-    .onWrite ( async (change: functions.Change<functions.database.DataSnapshot>, context: functions.EventContext) : Promise<any> => {
-        
-        if (!change.after.exists()) return;
+const saveEnglishPattern = async (hash, from, chat_id, message_id) => {
 
-        const episode : SimplyResultRow = new SimplyResultRow(change.after.val());
-        
-        if (episode.notified  === true) return;
+    const hash_path = hash.split("-").join("/");
+    const episode_snap = await db.ref(`rows/${hash_path}`).once('value');
 
-        // se trovo il valore cercato restituisco false, facendo uscire some
-        const english : boolean = english_movies.some(english_movie => {
-            return (episode.info.includes(english_movie));
-        });
-        if (english) {
-            episode.discard_reason = "E' in inglese";
-        } 
+    const snap : json_fmt = episode_snap.val();
 
-        if (episode.discarded === true) return;
-
-        await sendNotification(episode.toString());
-        episode.notified = true;
-        await change.after.ref.update(episode.toJson());
-        return;
-    });
-
-/*
-exports.parseIndex_v7 = functions.https.onRequest( async (req, res) => {
-
-    const v : string = "v25";
-
-    try {
-        const cache_path : string         = Strings.getCachePathFromQuery(1, 29);
-        const html       : string         = await Storage.readFile(cache_path);
-        const result     : TNT.ResultPage = Html.parse(html);
-
-        await Db.saveGlobalStats({page_count: result.total_pages, release_count: result.total_releases });
-        result.result_rows.forEach( async (item: ResultRow) : Promise<void> => {
-            await Db.saveTorrentRow(item);
-        })
-
-        res.contentType('html').status(200).send( v );
+    const tech_data      = snap.tech_data;
+    const tech_data_hash = uuidv5(tech_data, uuidv5.URL);
     
-    } catch(e) {
+    await db.ref('english_patterns/' + tech_data_hash).set(tech_data.trim());
 
-        res.contentType('html').status(200).send( `${v} - Errore durante il parse: -  ${e.toString()}` );
-    }   
-});
-*/
-
-/**
-* API HTTP  per richiedere l'aggiornamento dell'indice
-* Esempio: https://firebase.google.com/docs/functions/get-started
-*/
-/*
-exports.refresh = functions.https.onRequest( async (req, res) => {
-
-    const status_name  = Db.TREE.STATUS.KEYS.GET_PAGE_INDEX;
-    const status_value = Db.TREE.STATUS.KEY_VALUES.GET_PAGE_INDEX.REQUESTED;
-    
-    try {
-        await Db.failIfStateExists(status_name)
-        await Db.saveStatus(status_name, status_value);
-        return res.status(200).send("Richiesta accettata");
-    } catch ( error ) {
-        return res.status(500).send(`Richiesta rifiutata, Errore non gestibile, ${error}`);
+    const reply_telegram = {
+        "text"          : "Questo pattern è stato segnalato come inglese\n" + snap.tech_data,
+        "chat_id"       : MIRKO,
     }
-});
-*/
 
-/**
-* Quando ricevo il comando GET_PAGE_INDEX, 
-*/
+    await axios.post(TELEGRAM_API + "sendMessage", reply_telegram)
+        .catch( (error : AxiosError) => {
+            console.warn("Telegram KO", error.response.data);
+        }) ;    
 
-/*
-exports.onRequestPageIndex = functions.database.ref(`${Db.TREE.STATUS.ROOT}/${Db.TREE.STATUS.KEYS.GET_PAGE_INDEX}`)
-    .onCreate( async (snapshot) => {
-        
-        const status_name   = Db.TREE.STATUS.KEYS.GET_PAGE_INDEX;
-        const status_values = Db.TREE.STATUS.KEY_VALUES.GET_PAGE_INDEX;
 
-        if (snapshot.val() !== status_values.REQUESTED) {
+    const reply_telegram_from = {
+        "text"          : "Segnalazione ricevuta",
+        "chat_id"       : from.id,
+    }
+    await axios.post(TELEGRAM_API + "sendMessage", reply_telegram_from);     
+
+    const reply_telegram_to_change_text = {
+        "chat_id"       : chat_id,
+        "message_id"    : message_id,
+        "text"          : "Messaggio eliminato, il contenuto era in inglese",
+    }
+
+    await axios.post(TELEGRAM_API + "editMessageText", reply_telegram_to_change_text)
+        .catch( (error : AxiosError) => {
+            console.warn("Telegram KO", error.response.data);
+        }) 
+}
+
+// E' variato qualche dato di un episodio
+exports.onRowChanged_v28 = functions.database.ref(`rows/{seg_1}/{seg_2}/{seg_3}/{seg_4}/{seg_5}`)
+    .onWrite ( async (change: functions.Change<functions.database.DataSnapshot>, context: functions.EventContext) : Promise<any> => {
+
+        const full_hash : string = [ 
+            context.params.seg_1, 
+            context.params.seg_2,
+            context.params.seg_3,
+            context.params.seg_4,
+            context.params.seg_5,
+        ].join("-");
+
+        if (!change.after.exists()) {
+            // console.log(`${full_hash} cancellato`);
             return;
         }
 
-        try {
-            await Db.saveStatus(status_name, status_values.UPDATING_QUEUE);
-            await Db.enqueue(Db.TREE.QUEUES.KEYS.FORCE_DONWLOAD, new PostData(1, TNT.CATEGORIES.TV_SHOW));
-            await Db.deleteStatusName(status_name);
-        } catch (reason) {
-            console.warn(reason);
+        const episode : SimplyResultRow = new SimplyResultRow(change.after.val());
+
+        if (episode.discarded) {
+            // console.log(`${full_hash} scartato: ${episode.discard_reason}`);
+            return;
         }
 
-    });
+        const notification_registry = await db.ref("notified/" + full_hash ).once('value');
+        if (notification_registry.exists()) {
+            // console.log(`${full_hash} già notificato`);
+            return;
+        } 
 
-*/
+        const queued_notification_registry = await db.ref("to_notify/" + full_hash ).once('value');
+        if (queued_notification_registry.exists()) {
+            // console.log(`${full_hash} già in coda da notificare`);
+            return;
+        } 
 
-/**
-* Gestisce la coda FORCE_DOWNLOAD
-* Scarica una pagina cancellandone la precedente cache se esistente
-*/
-/*
-exports.onForceDownload_v19 = functions.database.ref(`${Db.TREE.QUEUES.ROOT}/${Db.TREE.QUEUES.KEYS.FORCE_DONWLOAD}/{push_id}`)
-    .onCreate( async (snapshot) :  Promise<void> => {
-        
-        const item_data : PostData     = snapshot.val();
-        const { page_number, category} = item_data;
-        const item_ref                 = snapshot.ref;
+        const english_movies_ref = await db.ref('english_patterns').once('value');
+        const english_movies_snap = english_movies_ref.val();
+        // { '6ab241a9-2794-5f4f-b79b-6104f426eb1f': '[XviD - Eng Mp3 - Sub Ita Eng]', 'fsdf sd ': 'fs dfs dfds' }
 
-        try {
-            const new_ref = await Db.moveQueuedItem(item_ref, `${Db.TREE.QUEUES.KEYS.DOWNLOADING}`);
-            await Storage.deleteCacheFileIfExists(page_number, category);
+        // Iteration is stopped once predicate returns truthy
+        const english : boolean = _.some(english_movies_snap, (pattern) => {
+            const out : boolean = (episode.tech_data.includes(pattern));
+            console.log (`test '${episode.tech_data}' with '${pattern}' - esit ${out}`);
+            return out;
+        });
 
-            // Non passato dalla stato DOWNLOADABLE, perchè la scarico a forza, e comunque
-            // so già che NON ho in cache la pagina
-            const response : Response = await getPage(page_number, category );
-            if ( response.status !== 200) {
-                return;
-            }
-            await Storage.saveAsPageCache (response.html, response.cache_file_path);
-            await Db.moveQueuedItem(new_ref, `${Db.TREE.QUEUES.KEYS.TO_PARSE}`);
+        if (english) {
+            // console.log(`${full_hash} è stato scartato perché in inglese`);
+            await change.after.ref.update({ discard_reason : "E' in inglese"});
+            return;
+        } 
 
-        } catch (reason) {
-            console.warn("onForceDownload other error ", reason);
-        }
-        
-    });
-*/
-
-/**
-* Gestisce la coda FORCE_DOWNLOAD
-* Scarica una pagina cancellandone la precedente cache se esistente
-*/
-/*
-exports.onDownload_v3 = functions.database.ref(`${Db.TREE.QUEUES.ROOT}/${Db.TREE.QUEUES.KEYS.DONWLOAD}/{push_id}`)
-    .onCreate( async (snapshot) :  Promise<void> => {
-        
-        const { page_number, category} = snapshot.val();
-        const item_ref                 = snapshot.ref;
-
-        try {
-
-            const new_ref = await Db.moveQueuedItem(item_ref, `${Db.TREE.QUEUES.KEYS.DONWLOADABLE}`);
-            const already_cached : boolean = await Storage.cacheFileExists(page_number, category)
-
-            if (!already_cached) { 
-                const response : Response = await getPage(page_number, category );
-                if (response.status !== 200) {
-                    return;
-                }
-                await Storage.saveAsPageCache (response.html, response.cache_file_path);
-            }
-            await Db.moveQueuedItem(new_ref, `${Db.TREE.QUEUES.KEYS.TO_PARSE}`);
-            
-        } catch (reason) {
-            console.warn("onDownload catched error", reason);
-        }
-        
-    });
-
-/**
-* Gestisce la coda TO_PARSE
-* Legge il contenuto di file e lo parsa
-*/    
-/*
-exports.onToParse_24 = functions.database.ref(`${Db.TREE.QUEUES.ROOT}/${Db.TREE.QUEUES.KEYS.TO_PARSE}/{push_id}`)
-    .onCreate( async (snapshot) :  Promise<void> => {
-
-        const { page_number, category}  = snapshot.val();
-        const post_data : PostData      = new PostData (page_number, category);
-        const cache_path : string       = post_data.cache_file_path;
-
-        try {
-
-            const new_ref : database.Reference = await Db.moveQueuedItem(snapshot.ref, `${Db.TREE.QUEUES.KEYS.PARSING}`);
-            const html    : string             = await Storage.readFile(cache_path);
-            const result  : TNT.ResultPage     = Html.parse(html);
-
-            await Db.saveGlobalStats({page_count: result.total_pages, release_count: result.total_releases });
-            // await Db.saveGlobalStats({page_count: 2, release_count: 3 });
-            result.result_rows.forEach( async (item: ResultRow) : Promise<void> => {
-                await Db.saveTorrentRow(item);
-            })
-            await Db.deleteQueuedItem(new_ref);
-
-        } catch (reason) {
-            console.warn("onToParse error ", reason.toString());
-        }
-
-    });
-
-
-
-// Se vengo a sapere che il numero di release è cambiato, setto lo stato GET_PAGE_INDEX.REQUESTED;
-// rigenero la coda di download (non forzato)
-exports.onReleaseCountChange_v8 = functions.database.ref(`${Db.TREE.STATISTICS.ROOT}/${Db.TREE.STATISTICS.KEYS.WEB_RELEASES}`)
-.onWrite ( async (
-    change: functions.Change<functions.database.DataSnapshot>, 
-    // context: functions.EventContext
-) : Promise<any> => {
-
-    let before : number;
-    let after : number;
-    if (!change.after.exists()) {
+        // Solo a questo punto sono libero di metterlo in coda come da notificare
+        const date_to_set : string = (new Date()).toISOString().substring(0, 19).replace('T', ' ');
+        // console.log ("Segno da notificare", full_hash)
+        await db.ref("to_notify/" + full_hash).set(date_to_set);
         return;
-    }
+    });
 
-    if (!change.before.exists) {
-        before = 0;
-    } else {
-        before = change.before.val();
-    }
+// E' stata aggiunta una nuova notifica in coda
+exports.onToBeNotified_v5 = functions.database.ref(`to_notify/{hash}`)
+    .onCreate( async (snapshot) => {
+        const hash = snapshot.key;
+        console.log ("Notifica accodata", hash);
+        const hash_path = hash.split("-").join("/");
+        
+        await sendNotificationForHash(hash_path);
 
-    after = Math.max(change.after.val(), before+1);
-    console.log('before', before, 'after', after);
+        // Sposto come modificato
+        const date_to_set : string = (new Date()).toISOString().substring(0, 19).replace('T', ' ');
+        await db.ref("notified/" + hash).set(date_to_set);
+        await snapshot.ref.remove();
+    });
 
-    if  (after >= before ) {
-        console.log(`changed releases from ${before} to ${after} `);
-        try {
-            const total_pages : number = await Db.getPageCount();
-            console.log(`actual page count ${total_pages}`);
-            for (let p : number = 2; p <=total_pages; p++) {
-                console.log('enqueue page', p, 'di', total_pages)
-                await Db.enqueue(Db.TREE.QUEUES.KEYS.DONWLOAD, new PostData(p, TNT.CATEGORIES.TV_SHOW));
-            }
-        } catch (reason) {
-            console.warn('pnRelease count change catched ', reason);
-        }
-    } else {
-        return; 
-    }
-});
-
-
-*/

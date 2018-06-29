@@ -3,9 +3,12 @@ import * as uuidv5 from 'uuid/v5';
 interface json_fmt {
     magnet : string,
     title  : string,
+    episodes: string,
     info   : string,
+    tech_data : string,
     discard_reason? : string,
     notified? : boolean,
+    last_seen? : string,
 };
 
 class SimplyResultRow{
@@ -13,19 +16,24 @@ class SimplyResultRow{
     private magnet : string;
     private title  : string;
     public info   : string;
+    public tech_data : string;
     public discard_reason : string;
-    public notified : boolean;
-
-  
+    public episodes : string;
+    public last_seen: string;
+    
     constructor(json : json_fmt){
-        this.magnet = json.magnet;
-        this.title  = json.title;
-        this.info   = json.info;
+        this.magnet     = json.magnet;
+        this.title      = json.title;
+        this.info       = json.info;
+        this.episodes   = json.episodes;
+        this.tech_data  = json.tech_data;
         if (json.discard_reason) {
             this.discard_reason = json.discard_reason;
         }
-        if (json.notified) {
-            this.notified = json.notified;
+        if (json.last_seen) {
+            this.last_seen = json.last_seen;
+        } else {
+            this.last_seen = (new Date()).toISOString().substring(0, 19).replace('T', ' ');
         }
     };
 
@@ -39,7 +47,12 @@ class SimplyResultRow{
     }
 
     public toString = () : string =>  {
-        return this.title + "\n" + this.info + (this.discard_reason ? "\n" + "Scatato perchè: " + this.discard_reason : "");
+        return this.title 
+                + "\n" + this.episodes
+                + "\n" + this.tech_data
+                + "\n" + this.info 
+                + "\n" + this.last_seen
+                + (this.discard_reason ? "\n" + "Scatato perchè: " + this.discard_reason : "");
     }
 
     public toJson = () : json_fmt => {
@@ -47,48 +60,15 @@ class SimplyResultRow{
             "magnet" : this.magnet, 
             "title" : this.title, 
             "info" : this.info, 
+            "tech_data" : this.tech_data,
+            "episodes" : this.episodes,
+            "last_seen" : this.last_seen,
         };
         if (this.discard_reason) {
             out.discard_reason = this.discard_reason;
-        }
-        if (this.notified) {
-            out.notified = this.notified;
         }
         return out;
     }
 }
 
-class ResultRow {
-
-    readonly magnet_link: string;
-    readonly category_id: number;
-    readonly leech_count: number;
-    readonly seed_count: number;
-    readonly title_link_text: string;
-    readonly title_text: string;
-
-    constructor(
-        magnet_link: string,
-        category_id: number,
-        leech_count: number,
-        seed_count: number,
-        title_link_text: string,
-        title_text: string
-    ){
-        this.magnet_link        = magnet_link;
-        this.category_id        = category_id;
-        this.leech_count        = leech_count;
-        this.seed_count         = seed_count;
-        this.title_link_text    = title_link_text;
-        this.title_text         = title_text;
-    };
-
-    get hash () : string {
-        const out : string = uuidv5(this.magnet_link, uuidv5.URL);
-        return out;
-    };
-}
-
 export { SimplyResultRow, json_fmt };
-
-export default ResultRow;

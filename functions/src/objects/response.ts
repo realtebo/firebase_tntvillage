@@ -1,4 +1,3 @@
-import * as Strings from '../strings-helpers';
 import { PostData } from './post-data';
 import { AxiosResponse } from 'axios';
 
@@ -28,14 +27,6 @@ class Response {
      */
     get html() : string {
         return this.data;
-    }
-
-    /**
-     * Compone il percorso dove deve essere salvato questo contenuto
-     */
-    get cache_file_path (): string {
-        const out : string =  Strings.getCachePathFromQuery(this.post_data.page_number, this.post_data.category);
-        return out;
     }
 }
 

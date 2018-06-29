@@ -1,11 +1,9 @@
-import * as _ from 'lodash';
-import * as Strings from '../strings-helpers';
 import * as Err from '../tntvillage/errors';
-import { CATEGORIES } from '../tntvillage';
 
 /**
  * Incapsula i dati per una query (i dati postati)
  */
+
 export class PostData {
 
     public readonly page_number: number;
@@ -19,10 +17,11 @@ export class PostData {
         } 
         this.page_number = page_number;
 
-        const valid_cat_number = _.findKey(CATEGORIES, item_val => item_val === category);
-        if (valid_cat_number === undefined) {
+        // const valid_cat_number = _.findKey(CATEGORIES, item_val => item_val === category);
+        /*if (valid_cat_number === undefined) {
             throw new Err.PostError(`Categoria ${category} non valida, usare una delle seguenti: ${CATEGORIES.ANY} o ${CATEGORIES.TV_SHOW}`);
         }
+        */
         this.category = category;
 
         this.search = search.trim();
@@ -32,11 +31,6 @@ export class PostData {
         return `cat=${this.category}&page=${this.page_number}&srcrel=${this.search}`;
     }
 
-    get cache_file_path(): string {
-        const path : string = Strings.getCachePathFromQuery(this.page_number, this.category);
-        //console.warn ('PostData cache_file_path', this.page_number, this.category, path);
-        return path;
-    }
 }
 
 export default PostData;

@@ -1,6 +1,5 @@
-import * as Strings  from '../strings-helpers';
 import { bucket } from '../app-helpers';
-import { File, ApiResponse, FileMetadata } from '@google-cloud/storage';
+import { File } from '@google-cloud/storage';
 import Err  from './errors';
 
 
@@ -30,55 +29,7 @@ const saveAsPageCache = (html: string, cache_file_path: string) : Promise<void> 
     return cache_file.save(html, cache_file_options);
 }
 
-/**
- * Restituisce true se il file corrispondente esiste
- * @param page_number 
- * @param category_number 
- */
-const cacheFileExists = (page_number: number, category_number: number) : Promise<boolean> => {
 
-    console.log(`cacheFileExists v1 -  ${page_number} - ${category_number}`);
-
-    const cache_file_path = Strings.getCachePathFromQuery(page_number, category_number);
-    const cache_file = bucket.file(cache_file_path);
-
-    return fileExists(cache_file)
-        .then ( () => {
-            return true;
-        })
-        .catch ( reason => {
-            // Se il file non esiste, ritorno false
-            if (reason instanceof Err.FileNotExists) return false;
-
-            // Arrivo qui se c'è un tipo di errore che NON conosco
-            throw reason;
-        })
-}
-
-/**
- * Rimuove un file di cache partendo dal numero di pagina
- * e dal numero della categoria.
- * Se il file non esisteva, restituisce true, senza generare
- * errori.
- */
-const deleteCacheFileIfExists = async (page_number: number, category_number: number) : Promise<boolean> => {
-
-    // console.warn('deleteCacheFileIfExists v11 ', page_number, category_number);
-
-    const cache_file_path : string = Strings.getCachePathFromQuery(page_number, category_number);
-    const cache_file      : File   = bucket.file(cache_file_path);
-    
-
-    try {
-        const exists  : boolean = await fileExists(cache_file);
-        const removed : boolean = await removeFile (cache_file);
-        return removed;
-    } catch( reason ) {
-        if (reason instanceof Err.FileNotExists) return true;
-        throw reason;
-    }
-    
-}
 
 /*#########################
  *      LOW_LEVEL
@@ -116,20 +67,6 @@ const fileExists =  (file_as_object : File) : Promise<boolean> => {
         })
 }
 
-/**
- * Legge la dimensione di un file
- */
-const getFileSizeByObject = (file_as_object : File ) : Promise<number> => {
-
-    // Qui c'è la spiegazione: 
-    // https://cloud.google.com/nodejs/docs/reference/storage/1.7.x/global#GetFileMetadataResponse
-   return  file_as_object.getMetadata()
-        .then ( (metadata : [FileMetadata, ApiResponse]) => {
-            const file_metadata = metadata[0];
-            const file_size = parseInt(file_metadata['size']);
-            return file_size;
-        });
-}
 
 /**
  * Scorciatoia
@@ -159,7 +96,6 @@ const readFile = async ( path: string) : Promise<string> => {
 
 export default { 
     saveAsPageCache,
-    fileExists, cacheFileExists,
+    fileExists, 
     removeFile, readFile,
-    deleteCacheFileIfExists,
 };

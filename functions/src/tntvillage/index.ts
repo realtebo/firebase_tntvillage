@@ -1,4 +1,4 @@
-
+/*
 import ResultRow from  '../objects/result-row';
 
 export const CATEGORIES = {
@@ -16,3 +16,4 @@ export class ResultPage {
 
 
 
+*/
