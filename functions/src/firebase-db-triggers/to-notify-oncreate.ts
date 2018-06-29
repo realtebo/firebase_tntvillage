@@ -1,5 +1,5 @@
 import { db } from '../app-helpers';
-import { sendEpisodeNotification } from '../helpers/send-episode-notification';
+import { sendEpisodeNotification } from '../bot-api/send-episode-notification';
 
 export const to_notify_oncreate = async (snapshot) => {
     const hash = snapshot.key;

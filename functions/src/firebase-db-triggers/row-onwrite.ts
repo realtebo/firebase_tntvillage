@@ -19,10 +19,10 @@ export const row_onwrite = async (change: functions.Change<functions.database.Da
         return;
     }
 
-    const episode : SimplyResultRow = new SimplyResultRow(change.after.val());
+    const tv_show : SimplyResultRow = new SimplyResultRow(change.after.val());
 
-    if (episode.discarded) {
-        // console.log(`${full_hash} scartato: ${episode.discard_reason}`);
+    if (tv_show.discarded) {
+        // console.log(`${full_hash} scartato: ${tv_show.discard_reason}`);
         return;
     }
 
@@ -38,19 +38,35 @@ export const row_onwrite = async (change: functions.Change<functions.database.Da
         return;
     } 
 
+
+
+
     const english_movies_ref = await db.ref('english_patterns').once('value');
     const english_movies_snap = english_movies_ref.val();
 
     // Si ferma e setta true al primo true che gli viene restituito
     const english : boolean = _.some(english_movies_snap, (pattern) => {
-        return (episode.tech_data.includes(pattern));
+        return (tv_show.tech_data.includes(pattern));
     });
 
     if (english) {
-        // console.log(`${full_hash} è stato scartato perché in inglese`);
         await change.after.ref.update({ discard_reason : "E' in inglese"});
         return;
     } 
+
+
+
+    const banned_shows_ref = await db.ref('banned_shows').once('value');    
+    const banned_shows_snap = banned_shows_ref.val();
+    const show_is_banned : boolean = _.some(banned_shows_snap, (pattern) => {
+        return (tv_show.title.trim().toUpperCase().includes(pattern));
+    })
+    if (show_is_banned) {
+        await change.after.ref.update({ discard_reason : "Serie TV ignorata"});
+        return;
+    } 
+
+
 
     // Solo a questo punto sono libero di metterlo in coda come da notificare
     const date_to_set : string = (new Date()).toISOString().substring(0, 19).replace('T', ' ');

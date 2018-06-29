@@ -1,4 +1,4 @@
-import * as uuidv5 from 'uuid/v5';
+import { makeHashAsPath } from '../helpers/make-hash';
 
 interface json_fmt {
     magnet : string,
@@ -38,7 +38,7 @@ class SimplyResultRow{
     };
 
     get hash () : string {
-        const out : string = uuidv5(this.magnet, uuidv5.URL).split("-").join("/");
+        const out : string = makeHashAsPath(this.magnet);
         return out;
     };   
 
