@@ -3,6 +3,7 @@ import { makeHashAsPath } from '../helpers/make-hash';
 interface json_fmt {
     magnet : string,
     title  : string,
+    subtitle?: string,
     episodes: string,
     info   : string,
     tech_data : string,
@@ -13,17 +14,21 @@ interface json_fmt {
 
 class SimplyResultRow{
 
-    public magnet : string;
-    public title  : string;
-    public info   : string;
-    public tech_data : string;
-    public discard_reason : string;
-    public episodes : string;
-    public last_seen: string;
+    public magnet           : string;
+    public title            : string;
+    public subtitle         : string;
+    public info             : string;
+    public tech_data        : string;
+    public discard_reason   : string;
+    public episodes         : string;
+    public last_seen        : string;
     
     constructor(json : json_fmt){
         this.magnet     = json.magnet;
         this.title      = json.title;
+        if (json.subtitle) {
+            this.subtitle = json.subtitle;
+        }
         this.info       = json.info;
         this.episodes   = json.episodes;
         this.tech_data  = json.tech_data;
@@ -48,6 +53,7 @@ class SimplyResultRow{
 
     public toString = () : string =>  {
         return this.title 
+                + (this.subtitle ? "\n" + this.subtitle : "");
                 + "\n" + this.episodes
                 + "\n" + this.tech_data
                 + "\n" + this.info 
@@ -57,6 +63,7 @@ class SimplyResultRow{
 
     public toHtml = () : string => {
         return "<b>" + this.title + "</b>"
+            + (this.subtitle ? "\n" + this.subtitle : "")
             + "\n" + this.episodes
             + "\n" + this.tech_data
             + "\n" + this.info ;
@@ -64,15 +71,18 @@ class SimplyResultRow{
 
     public toJson = () : json_fmt => {
         const out  : json_fmt = {
-            "magnet" : this.magnet, 
-            "title" : this.title, 
-            "info" : this.info, 
+            "magnet"    : this.magnet, 
+            "title"     : this.title, 
+            "info"      : this.info, 
             "tech_data" : this.tech_data,
-            "episodes" : this.episodes,
+            "episodes"  : this.episodes,
             "last_seen" : this.last_seen,
         };
         if (this.discard_reason) {
             out.discard_reason = this.discard_reason;
+        }
+        if (this.subtitle) {
+            out.subtitle = this.subtitle;
         }
         return out;
     }
