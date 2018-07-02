@@ -46,7 +46,7 @@ export const row_onwrite = async (change: functions.Change<functions.database.Da
 
     // Si ferma e setta true al primo true che gli viene restituito
     const english : boolean = _.some(english_movies_snap, (pattern) => {
-        return (tv_show.tech_data.includes(pattern));
+        return (tv_show.tech_data.trim().toUpperCase() === pattern.trim().toUpperCase() );
     });
 
     if (english) {
@@ -59,7 +59,7 @@ export const row_onwrite = async (change: functions.Change<functions.database.Da
     const banned_shows_ref = await db.ref('banned_shows').once('value');    
     const banned_shows_snap = banned_shows_ref.val();
     const show_is_banned : boolean = _.some(banned_shows_snap, (pattern) => {
-        return (tv_show.title.trim().toUpperCase().includes(pattern));
+        return (tv_show.title.trim().toUpperCase() === pattern);
     })
     if (show_is_banned) {
         await change.after.ref.update({ discard_reason : "Serie TV ignorata"});
