@@ -30,7 +30,7 @@ export const refresh = async () : Promise<boolean> => {
         const subtitle  : string  = (title_and_sub.subtitle ? title_and_sub.subtitle : null);
         const episodes  : string  = title_and_sub.episodes;
 
-        console.log ( title, "=>", title_and_sub);
+        // console.log ( title, "=>", title_and_sub);
 
         // Separo le info tecniche dalle altre note
         const matches    : RegExpMatchArray | null  = info.match(/\[[^\]]*\]/ig);  
@@ -41,9 +41,6 @@ export const refresh = async () : Promise<boolean> => {
         const row  : SimplyResultRow = new SimplyResultRow(json);
         const hash : string = row.hash;
 
-
-
-        // console.log ("Aggiorno ", hash);
         await db.ref(`rows/${hash}`).update(row.toJson());
     });
         
