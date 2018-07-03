@@ -21,15 +21,16 @@ export const refresh = async () : Promise<boolean> => {
 
     await rows.each( async (index :number, element: CheerioElement) : Promise<void> => {
         const magnet      : string = $(element).find("TD:nth-child(2) A").attr("href").trim();
-        const title         : string = $(element).find("TD:nth-child(7) A").text().trim();
+        let title         : string = $(element).find("TD:nth-child(7) A").text().trim();
         let info          : string = $(element).find("TD:nth-child(7) ").clone().children().remove().end().text().trim();
         
-        console.log ( title );
         const title_and_sub  : TitleSubEp       = cleanTitle(title);
-        const subtitle       : string           = (title_and_sub.subtitle ? title_and_sub.subtitle : null);
-        const episodes       : string           = title_and_sub.episodes;
+        
+        title                     =  (title_and_sub.title);
+        const subtitle  : string  = (title_and_sub.subtitle ? title_and_sub.subtitle : null);
+        const episodes  : string  = title_and_sub.episodes;
 
-        console.log ( title_and_sub);
+        console.log ( title, "=>", title_and_sub);
 
         // Separo le info tecniche dalle altre note
         const matches    : RegExpMatchArray | null  = info.match(/\[[^\]]*\]/ig);  
