@@ -1,10 +1,25 @@
 import { makeHashAsPath } from '../helpers/make-hash';
 
-interface json_fmt {
-    magnet : string,
+/**
+ * @interface
+ */
+interface TitleAndSubtitle {
     title  : string,
     subtitle?: string,
+}
+
+/**
+ * @interface
+ */
+interface TitleSubEp extends TitleAndSubtitle {
     episodes: string,
+}
+
+/**
+ * @interface
+ */
+interface json_fmt extends TitleSubEp {
+    magnet : string,
     info   : string,
     tech_data : string,
     discard_reason? : string,
@@ -88,4 +103,4 @@ class SimplyResultRow{
     }
 }
 
-export { SimplyResultRow, json_fmt };
+export { SimplyResultRow, json_fmt, TitleAndSubtitle, TitleSubEp };

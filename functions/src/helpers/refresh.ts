@@ -3,7 +3,8 @@ import * as cheerio from 'cheerio';
 import { db } from '../app-helpers';
 import * as network from '../network-helpers';
 import Response from '../objects/response';
-import { SimplyResultRow, json_fmt } from '../objects/result-row';
+import { SimplyResultRow, json_fmt, TitleSubEp } from '../objects/result-row';
+import { cleanTitle } from './clean-title';
 
 export const refresh = async () : Promise<boolean> => {
 
@@ -20,19 +21,12 @@ export const refresh = async () : Promise<boolean> => {
 
     await rows.each( async (index :number, element: CheerioElement) : Promise<void> => {
         const magnet      : string = $(element).find("TD:nth-child(2) A").attr("href").trim();
-        let title         : string = $(element).find("TD:nth-child(7) A").text().trim();
+        const title         : string = $(element).find("TD:nth-child(7) A").text().trim();
         let info          : string = $(element).find("TD:nth-child(7) ").clone().children().remove().end().text().trim();
-        let subtitle      : string;
-
-        // Fixo la presenza di 'COMPLETE SEASON' nel titolo, e se presente sposto questa dicitura nel sottotitolo
-        if (title.trim().toUpperCase().includes("COMPLETE SEASON")) {
-            title    = title.replace(/complete season/ig, "").trim();
-            subtitle = "COMPLETE SEASON";
-        }
-
-        // Rimuovo numero di serie e numero di episodio (anche in range opzionale)
-        const episodes    : string  = title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9](-[0-9][0-9])?/ig)[0].trim();
-        title                       = title.replace(episodes, "").trim();
+        
+        const title_and_sub  : TitleSubEp       = cleanTitle(title);
+        const subtitle       : string           = (title_and_sub.subtitle ? title_and_sub.subtitle : null);
+        const episodes       : string           = title_and_sub.episodes;
 
         // Separo le info tecniche dalle altre note
         const matches    : RegExpMatchArray | null  = info.match(/\[[^\]]*\]/ig);  
