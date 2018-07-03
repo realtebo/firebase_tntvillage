@@ -29,23 +29,26 @@ export const cleanTitle = (title_to_clean : string) : TitleSubEp => {
 
     let out_subtitle = null;
     let cleaned : TitleAndSubtitle;
+
     cleaned = removeThisPattern(title_to_clean, "COMPLETE SEASON");
     if (cleaned.subtitle) { 
         out_subtitle = cleaned.subtitle;
     }
 
+    console.log ("Era 1: ", cleaned);
     cleaned = removeThisPattern(cleaned.title, "STAGIONE COMPLETA");
     if (cleaned.subtitle) { 
-        out_subtitle += cleaned.subtitle;
+        out_subtitle = (out_subtitle ? out_subtitle + cleaned.subtitle : cleaned.subtitle) ;
     }
+    console.log ("Era 2: ", cleaned, out_subtitle);
 
-    
     // Rimuovo numero di serie e numero di episodio (anche in range opzionale)
-    const episodes    : string  = cleaned.title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9](-[0-9][0-9])?/ig)[0].trim();
-    cleaned.title               = cleaned.title.replace(episodes, "").trim();
-   
+    const episodes   : string  = cleaned.title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9](-[0-9][0-9])?/ig)[0].trim();
+    const out_title  : string  = cleaned.title.replace(episodes, "").trim();
+    console.log ("Era 3: ", cleaned, out_subtitle);
+       
     return <TitleSubEp>{ 
-        title : cleaned.title, 
+        title : out_title, 
         subtitle: (out_subtitle ? out_subtitle : null) ,
         episodes: (episodes ? episodes : null),
     };

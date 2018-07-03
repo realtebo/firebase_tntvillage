@@ -24,9 +24,12 @@ export const refresh = async () : Promise<boolean> => {
         const title         : string = $(element).find("TD:nth-child(7) A").text().trim();
         let info          : string = $(element).find("TD:nth-child(7) ").clone().children().remove().end().text().trim();
         
+        console.log ( title );
         const title_and_sub  : TitleSubEp       = cleanTitle(title);
         const subtitle       : string           = (title_and_sub.subtitle ? title_and_sub.subtitle : null);
         const episodes       : string           = title_and_sub.episodes;
+
+        console.log ( title_and_sub);
 
         // Separo le info tecniche dalle altre note
         const matches    : RegExpMatchArray | null  = info.match(/\[[^\]]*\]/ig);  
@@ -36,6 +39,8 @@ export const refresh = async () : Promise<boolean> => {
         const json : json_fmt = {info, title, subtitle, magnet, episodes, tech_data};
         const row  : SimplyResultRow = new SimplyResultRow(json);
         const hash : string = row.hash;
+
+
 
         // console.log ("Aggiorno ", hash);
         await db.ref(`rows/${hash}`).update(row.toJson());
