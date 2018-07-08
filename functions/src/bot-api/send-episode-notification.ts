@@ -4,16 +4,15 @@ import { db } from '../app-helpers';
 import { SimplyResultRow } from '../objects/result-row';
 import { MIRKO, RITA, TELEGRAM_API } from '../bot-api/constants';
 import { makePathHashFromFullHash } from '../helpers/make-hash';
+import { database } from 'firebase-functions';
 
 export const sendEpisodeNotification = async (hash : string) : Promise<void> => {
 
-    const hash_path : string = makePathHashFromFullHash(hash);
+    const hash_path : string                = makePathHashFromFullHash(hash);
+    const episode   : database.DataSnapshot = await db.ref(`rows/${hash_path}`).once('value');
+    const row       : SimplyResultRow       = new SimplyResultRow(episode.val());
 
-    const episode = await db.ref(`rows/${hash_path}`).once('value');
-    const row : SimplyResultRow = new SimplyResultRow(episode.val());
-
-    // console.log (`sendNotificationForHash ${hash} - Notifica da inviare ${row.toString()}`);
-
+    // Icone
     const england_flag = String.fromCodePoint(0x1F1EC, 0x1F1E7);
     const find_icon    = String.fromCodePoint(0x1F50D);
     const reycle_bin   = String.fromCodePoint(0x1F5D1, 0xFE0F);
@@ -62,26 +61,19 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
     }
 
     // Funzionalità sperimentali
-    /*
-    const keyboard_experimental = { "inline_keyboard" : [  
-        [
-         { "text": england_flag + " E' in inglese",  "callback_data" :  `command=is_english&hash=${hash_path}`	},
-         { "text": find_icon + "Google",  "url" :  `https://www.google.it/search?q=${row.title}` },
-       ],
-       [
-          { "text": "Cancella messaggio",  "callback_data" :  `command=delete_message` }
-       ]
-    ]};
-
+    
     const reply_telegram_experimental = {
-        ...reply_telegram,
-        "reply_markup"       : keyboard_experimental,
-        "chat_id"           : MIRKO,
+        "chat_id"               : MIRKO,
+        "photo"                 : row.image_url,
+        "caption"               : row.toHtml(),
+        "parse_mode"            : "HTML",
+        "disable_notification"  : true,
+        "reply_markup"          : keyboard,
     }
 
-    await axios.post(TELEGRAM_API + "sendMessage", reply_telegram_experimental)
+    await axios.post(TELEGRAM_API + "sendPhoto", reply_telegram_experimental)
         .catch( (error : AxiosError) => {
-            console.warn("Telegram KO", error.response.data);
+            console.warn("Telegram sendPhoto KO", error.response.data);
         });  
-    */
+    
 }
