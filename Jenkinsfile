@@ -3,7 +3,10 @@ pipeline {
   stages {
     stage('prova stage') {
       steps {
-        dir(path: './functioms')
+        dir(path: './functioms') {
+          sh 'node run lint'
+        }
+
       }
     }
   }
