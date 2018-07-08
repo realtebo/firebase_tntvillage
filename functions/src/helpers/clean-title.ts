@@ -27,7 +27,7 @@ const removeThisPattern = (title : string, patternToRemove : string) : TitleAndS
  */
 export const cleanTitle = (title_to_clean : string) : TitleSubEp => {
 
-    let out_subtitle = null;
+    let out_subtitle : string = null;
     let cleaned : TitleAndSubtitle;
 
     cleaned = removeThisPattern(title_to_clean, "COMPLETE SEASON");
@@ -37,16 +37,34 @@ export const cleanTitle = (title_to_clean : string) : TitleSubEp => {
 
     cleaned = removeThisPattern(cleaned.title, "STAGIONE COMPLETA");
     if (cleaned.subtitle) { 
-        out_subtitle = (out_subtitle ? out_subtitle + cleaned.subtitle : cleaned.subtitle) ;
+        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
     }
+
+    cleaned = removeThisPattern(cleaned.title, "COMPLETA");
+    if (cleaned.subtitle) { 
+        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
+    }
+
+    cleaned = removeThisPattern(cleaned.title, "SEASON FINALE");
+    if (cleaned.subtitle) { 
+        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
+    }
+
+    cleaned = removeThisPattern(cleaned.title, "V 1080");
+    if (cleaned.subtitle) { 
+        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
+    }
+
+    // Rimuovo tutti gli spazi multipli
+    cleaned.title = cleaned.title.replace(/\s\s/ig, " ").trim();
 
     // Rimuovo numero di serie e numero di episodio (anche in range opzionale)
     const episodes   : string  = cleaned.title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9](-[0-9][0-9])?/ig)[0].trim();
     const out_title  : string  = cleaned.title.replace(episodes, "").trim();
        
     return <TitleSubEp>{ 
-        title : out_title, 
-        subtitle: (out_subtitle ? out_subtitle : null) ,
-        episodes: (episodes ? episodes : null),
+        title    : out_title, 
+        subtitle : (out_subtitle ? out_subtitle : null) ,
+        episodes : (episodes ? episodes : null),
     };
 }

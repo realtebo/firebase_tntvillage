@@ -25,6 +25,7 @@ interface json_fmt extends TitleSubEp {
     discard_reason? : string,
     notified? : boolean,
     last_seen? : string,
+    image_url? : string,
 };
 
 class SimplyResultRow{
@@ -37,23 +38,33 @@ class SimplyResultRow{
     public discard_reason   : string;
     public episodes         : string;
     public last_seen        : string;
+    public image_url        : string;
     
     constructor(json : json_fmt){
+
         this.magnet     = json.magnet;
         this.title      = json.title;
+
         if (json.subtitle) {
             this.subtitle = json.subtitle;
         }
+
         this.info       = json.info;
         this.episodes   = json.episodes;
         this.tech_data  = json.tech_data;
+
         if (json.discard_reason) {
             this.discard_reason = json.discard_reason;
         }
+
         if (json.last_seen) {
             this.last_seen = json.last_seen;
         } else {
             this.last_seen = (new Date()).toISOString().substring(0, 19).replace('T', ' ');
+        }
+        
+        if (json.image_url) {
+            this.image_url = json.image_url;
         }
     };
 
@@ -92,6 +103,7 @@ class SimplyResultRow{
             "tech_data" : this.tech_data,
             "episodes"  : this.episodes,
             "last_seen" : this.last_seen,
+            'image_url' : this.image_url,
         };
         if (this.discard_reason) {
             out.discard_reason = this.discard_reason;
