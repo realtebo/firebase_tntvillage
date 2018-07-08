@@ -4,7 +4,7 @@ pipeline {
     stage('prova stage') {
       steps {
         dir(path: './functions') {
-          bat(script: 'npm run limt', returnStatus: true, returnStdout: true)
+          bat(script: 'echo %PATH%', returnStatus: true, returnStdout: true, encoding: 'utf-8')
         }
 
         cleanWs(cleanWhenNotBuilt: true, cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenSuccess: true, cleanWhenUnstable: true, cleanupMatrixParent: true, deleteDirs: true, notFailBuild: true)
