@@ -11,4 +11,7 @@ pipeline {
       }
     }
   }
+  environment {
+    Path = '%PATH%'
+  }
 }
