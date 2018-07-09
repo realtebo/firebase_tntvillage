@@ -34,6 +34,23 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
         ]
     ]};
 
+    // Funzionalità sperimentali
+    
+    const reply_telegram = {
+        "chat_id"               : MIRKO,
+        "photo"                 : row.image_url,
+        "caption"               : row.toHtml(),
+        "parse_mode"            : "HTML",
+        "disable_notification"  : true,
+        "reply_markup"          : keyboard,
+    }
+
+    await axios.post(TELEGRAM_API + "sendPhoto", reply_telegram)
+        .catch( (error : AxiosError) => {
+            console.warn("Telegram sendPhoto KO", error.response.data);
+        });    
+    
+    /*
     const reply_telegram = {
         "text"                  : row.toHtml(),
         'parse_mode'            : "HTML",
@@ -47,21 +64,29 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
         .catch( (error : AxiosError) => {
             console.warn("Telegram KO", error.response.data);
         });
+    */
     
     // Decideo se inviare a Rita
     const rita = await db.ref('rita').once('value');
+
     if (rita.val() !== 'off') {
         reply_telegram.chat_id = RITA;
+        /*
         await axios.post(TELEGRAM_API + "sendMessage", reply_telegram)
             .catch( (error : AxiosError) => {
                 console.warn("Telegram KO", error.response.data);
             });
+        */
+        await axios.post(TELEGRAM_API + "sendPhoto", reply_telegram)
+            .catch( (error : AxiosError) => {
+                console.warn("Telegram sendPhoto KO", error.response.data);
+            }); 
     } else {
         console.log ( "Spedizione a Rita disattiva !");
     }
 
     // Funzionalità sperimentali
-    
+    /*
     const reply_telegram_experimental = {
         "chat_id"               : MIRKO,
         "photo"                 : row.image_url,
@@ -75,5 +100,6 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
         .catch( (error : AxiosError) => {
             console.warn("Telegram sendPhoto KO", error.response.data);
         });  
+    */
     
 }
