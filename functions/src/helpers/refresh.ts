@@ -56,10 +56,23 @@ export const refresh = async () : Promise<boolean> => {
         }
 
         // Ho tutti i dati per provvedere all'aggiornamento di questa riga
-        const json : json_fmt = {info, title, subtitle, magnet, episodes, tech_data, image_url};
-        const row  : SimplyResultRow = new SimplyResultRow(json);
+        // La classe SimplyResultRow fa alcune 'cose' e potenzialmente altre 
+        // in fase di input/outpt, non è un passaggio inutile
+        const json_input  : json_fmt        = {info, title, subtitle, magnet, episodes, tech_data, image_url};
+        const row         : SimplyResultRow = new SimplyResultRow(json_input);
 
-        await episode_ref.update(row.toJson());
+        let json_output : json_fmt;
+        try {
+            json_output = row.toJson();
+        } catch (e) {
+            console.warn ("Refresh row.toJson throwed " + e.message + " with the row", row) ;
+        }
+
+        try {
+            await episode_ref.update(json_output);
+        } catch (e) {
+            console.warn ("Refresh episode_ref.update throwed " + e.message + " with the object", json_output);
+        }
     });
         
     await db.ref('refresh').remove();

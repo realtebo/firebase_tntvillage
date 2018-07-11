@@ -41,8 +41,14 @@ export const row_onwrite = async (change: functions.Change<functions.database.Da
 
 
 
-    const english_movies_ref = await db.ref('english_patterns').once('value');
+    const english_movies_ref  = await db.ref('english_patterns').once('value');
     const english_movies_snap = english_movies_ref.val();
+
+    if ( typeof english_movies_snap.some === "undefined" ) {
+        console.warn ("DEBUG: tipo english_movies_snap: ", (typeof english_movies_snap));
+        return;
+    }
+    
 
     // Si ferma e setta true al primo true che gli viene restituito
     const english : boolean = _.some(english_movies_snap, (pattern) => {
