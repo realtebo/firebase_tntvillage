@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import { db } from '../app-helpers';
 import { SimplyResultRow } from '../objects/result-row';
 import { nowAsString } from '../helpers/now-as-string';
+import { makeHash } from '../helpers/make-hash';
 
 export const row_onwrite = async (
     change: functions.Change<functions.database.DataSnapshot>, 
@@ -25,6 +26,7 @@ export const row_onwrite = async (
 
     const tv_show       : SimplyResultRow = new SimplyResultRow(change.after.val());
     const title_cleaned : string          = tv_show.title.trim().toUpperCase();
+    const title_hash    : string          = makeHash(tv_show.title);
 
     if (tv_show.discarded) {
         console.log(`${full_hash} scartato: ${tv_show.discard_reason}`);
@@ -32,7 +34,7 @@ export const row_onwrite = async (
         // Eseguo la migrazione al nuovo modello di flag
         
         // Quello vecchio era hash => titolo
-        const old_banned_flag = await db.ref('banned_shows/' + title_cleaned).once('value');
+        const old_banned_flag = await db.ref('banned_shows/' + title_hash).once('value');
         if (old_banned_flag.exists()) {
             old_banned_flag.ref.remove();
         }
