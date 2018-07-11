@@ -8,6 +8,7 @@ import { cleanTitle } from './clean-title';
 import { searchImage } from './search-image';
 import { database } from 'firebase-admin';
 import { makeHashAsPath } from './make-hash';
+import { cleanString } from './clean-string';
 
 export const refresh = async () : Promise<boolean> => {
 
@@ -33,10 +34,11 @@ export const refresh = async () : Promise<boolean> => {
         const subtitle  : string  = (title_and_sub.subtitle ? title_and_sub.subtitle : null);
         const episodes  : string  = title_and_sub.episodes;
 
-        // Separo le info tecniche dalle altre note
-        const matches    : RegExpMatchArray | null  = info.match(/\[[^\]]*\]/ig);  
-        const tech_data  : string                   = (matches ? matches[0] : "").trim();
-        info                                        = info.replace(tech_data, "").trim();
+        // Separo le info tecniche dalle altre note e pulisco il tutto
+        const matches  : RegExpMatchArray | null  = info.match(/\[[^\]]*\]/ig);  
+        let tech_data  : string                   = (matches ? matches[0] : "").trim();
+        tech_data                                 = cleanString(tech_data.replace('[','').replace(']',''));
+        info                                      = cleanString(info.replace(tech_data, "").trim());
 
         // Cerco l'immagine della serie tv
         const hash         : string                = makeHashAsPath(magnet);

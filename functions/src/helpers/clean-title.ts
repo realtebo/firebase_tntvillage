@@ -10,7 +10,7 @@ const removeThisPattern = (title : string, patternToRemove : string) : TitleAndS
 
     if (nearCleanTitle.includes(cleanPattern) ) {
 
-        const regexp        : RegExp = new RegExp(patternToRemove,"ig");
+        const regexp        : RegExp = new RegExp(cleanPattern,"ig");
         const new_title     : string = cleanString(nearCleanTitle.replace(regexp, ""));
         const new_subtitle  : string = cleanPattern;
 
