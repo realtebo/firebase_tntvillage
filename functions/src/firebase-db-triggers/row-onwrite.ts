@@ -34,7 +34,7 @@ export const row_onwrite = async (
         // Quello vecchio era hash => titolo
         const old_banned_flag = await db.ref('banned_shows/' + title_cleaned).once('value');
         if (old_banned_flag.exists()) {
-            old_banned_flag.remove();
+            old_banned_flag.ref.remove();
         }
 
         // Il nuovo è titolo => data
