@@ -1,21 +1,30 @@
 import { json_fmt, TitleAndSubtitle, TitleSubEp } from '../objects/result-row';
+import { cleanString } from './clean-string';
+
 
 // Helper privato
 const removeThisPattern = (title : string, patternToRemove : string) : TitleAndSubtitle => {
 
-    if (title.trim().toUpperCase().includes(patternToRemove.trim().toUpperCase()) ) {
+    const cleanPattern     : string =  cleanString(patternToRemove);
+    const nearCleanTitle   : string =  cleanString(title);
+
+    if (nearCleanTitle.includes(cleanPattern) ) {
+
         const regexp        : RegExp = new RegExp(patternToRemove,"ig");
-        const new_title     : string = title.replace(regexp, "").trim();
-        const new_subtitle  : string = patternToRemove.trim().toUpperCase();
+        const new_title     : string = cleanString(nearCleanTitle.replace(regexp, ""));
+        const new_subtitle  : string = cleanPattern;
 
         return <json_fmt>{
             title    : new_title,
             subtitle : new_subtitle
         }
+
     } else {
+
         return {
             title
         }
+        
     }
 }
 

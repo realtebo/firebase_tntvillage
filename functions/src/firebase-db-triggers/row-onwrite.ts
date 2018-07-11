@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { db } from '../app-helpers';
 import { SimplyResultRow } from '../objects/result-row';
 import { nowAsString } from '../helpers/now-as-string';
-import { makeHash } from '../helpers/make-hash';
+import { cleanString } from '../helpers/clean-string';
 
 export const row_onwrite = async (
     change: functions.Change<functions.database.DataSnapshot>, 
@@ -24,52 +24,62 @@ export const row_onwrite = async (
         return;
     }
 
-    const tv_show       : SimplyResultRow = new SimplyResultRow(change.after.val());
-    const title_cleaned : string          = tv_show.title.trim().toUpperCase();
-    const title_hash    : string          = makeHash(tv_show.title);
+    const tv_show           : SimplyResultRow = new SimplyResultRow(change.after.val());
+    const title_cleaned     : string          = cleanString(tv_show.title);
+    const tech_data_cleaned : string      = cleanString(tv_show.tech_data);
 
     if (tv_show.discarded) {
-        console.log(`${full_hash} scartato: ${tv_show.discard_reason}`);
+        
         
         // Eseguo la migrazione al nuovo modello di flag
-        
-        // Quello vecchio era hash => titolo
-        const old_banned_flag = await db.ref('banned_shows/' + title_hash).once('value');
-        if (old_banned_flag.exists()) {
-            old_banned_flag.ref.remove();
-        }
+        if (tv_show.discard_reason === "Serie TV ignorata") {
+            const show_already_banned = await db.ref(`banned_shows/${title_cleaned}`).once('value');
+            if (!show_already_banned.exists()) {
+                await db.ref(`banned_shows/${title_cleaned}`).set( nowAsString() );
+            }
+            return;
 
-        // Il nuovo è titolo => data
-        const show_already_banned = await db.ref(`banned_shows/${title_cleaned}`).once('value');
-        if (!show_already_banned.exists()) {
-            await db.ref(`banned_shows/${title_cleaned}`).set( nowAsString() );
+        } 
+        
+        if (tv_show.discard_reason === "E' in inglese") {
+
+            const pattern_already_saved = await db.ref(`english_patterns/${tech_data_cleaned}`).once('value');
+            if (!pattern_already_saved.exists()) {
+                await db.ref(`english_patterns/${tech_data_cleaned}`).set( nowAsString() );
+            }
+            return;
         }
-        return;
+        
+        // Segnalo come grave il fatto che non sono stato in grado di identificare la ragione dello scarto
+        console.warn(`${full_hash} - ${title_cleaned} scartato: ${tv_show.discard_reason}`);
     }
 
     const notification_registry = await db.ref("notified/" + full_hash ).once('value');
     if (notification_registry.exists()) {
-        console.log(`${full_hash} già notificato`);
+        // console.log(`${full_hash} già notificato`);
         return;
     } 
 
     const queued_notification_registry = await db.ref("to_notify/" + full_hash ).once('value');
     if (queued_notification_registry.exists()) {
-        console.log(`${full_hash} già in coda da notificare`);
+        // console.log(`${full_hash} già in coda da notificare`);
         return;
     } 
-
-
-
 
     const english_movies_ref  = await db.ref('english_patterns').once('value');
     const english_movies_snap = english_movies_ref.val();
 
-    // Si ferma e setta true al primo true che gli viene restituito
     let english : boolean = false;
     try {
-        english = _.some(english_movies_snap, (pattern) => {
-            return (tv_show.tech_data.trim().toUpperCase() === pattern.trim().toUpperCase() );
+        // Si ferma e setta true al primo true che gli viene restituito
+        english = _.some(english_movies_snap, (value : string, key: string) => {
+            const cleanKey   : string = cleanString(key);
+            const cleanValue : string = cleanString(value);
+            return (
+                (tech_data_cleaned === cleanValue) 
+                ||
+                (tech_data_cleaned === value) 
+            );
         });
     } catch (e) {
         console.warn ( 
@@ -101,8 +111,8 @@ export const row_onwrite = async (
 
     const show_is_banned : boolean = _.some(banned_shows_snap, (value, key) : boolean=> {
 
-        const value_cleaned = value.trim().toUpperCase();
-        const key_cleaned   = key.trim().toUpperCase();
+        const value_cleaned = cleanString(value);
+        const key_cleaned   = cleanString(key);
 
         // Confronto sia chiave che nome
         // dal 11.07.2018 infatti, uso i nomi degli show come chiavi
