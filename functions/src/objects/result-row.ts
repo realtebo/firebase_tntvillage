@@ -1,4 +1,5 @@
 import { makeHashAsPath } from '../helpers/make-hash';
+import { nowAsString } from '../helpers/now-as-string';
 
 /**
  * @interface
@@ -60,7 +61,7 @@ class SimplyResultRow{
         if (json.last_seen) {
             this.last_seen = json.last_seen;
         } else {
-            this.last_seen = (new Date()).toISOString().substring(0, 19).replace('T', ' ');
+            this.last_seen = nowAsString();
         }
         
         if (json.image_url) {

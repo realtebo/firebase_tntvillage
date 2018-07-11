@@ -1,5 +1,6 @@
 import { db } from '../app-helpers';
 import { sendEpisodeNotification } from '../bot-api/send-episode-notification';
+import { nowAsString } from '../helpers/now-as-string';
 
 export const to_notify_oncreate = async (snapshot) => {
     const hash = snapshot.key;
@@ -9,7 +10,7 @@ export const to_notify_oncreate = async (snapshot) => {
     await sendEpisodeNotification(hash_path);
 
     // Sposto come modificato
-    const date_to_set : string = (new Date()).toISOString().substring(0, 19).replace('T', ' ');
+    const date_to_set : string = nowAsString();
     await db.ref("notified/" + hash).set(date_to_set);
     await snapshot.ref.remove();
 }
