@@ -1,6 +1,5 @@
 import { json_fmt} from '../objects/result-row';
 import { get_snap_from_hash } from '../helpers/get-snap-from-hash';
-import { makeHash } from './make-hash';
 import { db } from '../app-helpers';
 import { sendTo } from '../bot-api/send-to';
 import { MIRKO } from '../bot-api/constants';

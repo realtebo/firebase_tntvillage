@@ -1,6 +1,5 @@
 import * as GoogleImages from 'google-images';
 import { CUSTOM_SEARCH_ENGINE_ID, GOOGLE_API_SEARCH_KEY } from '../google-api/constants';
-import { isMaster } from 'cluster';
 
 /**
  * Dato un titolo, più pulito possibile, cerco una immagine da allegare al messaggio
