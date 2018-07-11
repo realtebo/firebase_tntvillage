@@ -16,7 +16,7 @@ export const searchImage = async (title : string) : Promise<string> => {
 
     // Fix: ovviamente NON è detto che tutti i tioli diano immagini
     if (typeof images[0] === "undefined" ) {
-        console.log ("La ricerca di " + title + " ha prodotto: ", images);
+        console.warn("Nessuna immagine trovata per '" + title + "'. Dati ricevuti dal search: " + typeof images, images);
         return "";
     }
     return images[0].url;

@@ -22,19 +22,19 @@ export const row_onwrite = async (change: functions.Change<functions.database.Da
     const tv_show : SimplyResultRow = new SimplyResultRow(change.after.val());
 
     if (tv_show.discarded) {
-        // console.log(`${full_hash} scartato: ${tv_show.discard_reason}`);
+         console.log(`${full_hash} scartato: ${tv_show.discard_reason}`);
         return;
     }
 
     const notification_registry = await db.ref("notified/" + full_hash ).once('value');
     if (notification_registry.exists()) {
-        // console.log(`${full_hash} già notificato`);
+        console.log(`${full_hash} già notificato`);
         return;
     } 
 
     const queued_notification_registry = await db.ref("to_notify/" + full_hash ).once('value');
     if (queued_notification_registry.exists()) {
-        // console.log(`${full_hash} già in coda da notificare`);
+        console.log(`${full_hash} già in coda da notificare`);
         return;
     } 
 
@@ -44,16 +44,19 @@ export const row_onwrite = async (change: functions.Change<functions.database.Da
     const english_movies_ref  = await db.ref('english_patterns').once('value');
     const english_movies_snap = english_movies_ref.val();
 
-    if ( typeof english_movies_snap.some === "undefined" ) {
-        console.warn ("DEBUG: tipo english_movies_snap: ", (typeof english_movies_snap));
-        return;
-    }
-    
-
     // Si ferma e setta true al primo true che gli viene restituito
-    const english : boolean = _.some(english_movies_snap, (pattern) => {
-        return (tv_show.tech_data.trim().toUpperCase() === pattern.trim().toUpperCase() );
-    });
+    let english : boolean = false;
+    try {
+        english = _.some(english_movies_snap, (pattern) => {
+            return (tv_show.tech_data.trim().toUpperCase() === pattern.trim().toUpperCase() );
+        });
+    } catch (e) {
+        console.warn ( 
+            "_.some(english_movies_snap) ha generato " + e.message 
+            + ", è di tipo " + (typeof english_movies_snap), 
+            "dump", english_movies_snap
+        );
+    }
 
     if (english) {
         await change.after.ref.update({ discard_reason : "E' in inglese"});

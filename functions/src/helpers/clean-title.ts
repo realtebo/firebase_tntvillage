@@ -55,8 +55,20 @@ export const cleanTitle = (title_to_clean : string) : TitleSubEp => {
         out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
     }
 
+    cleaned = removeThisPattern(cleaned.title, "V 720");
+    if (cleaned.subtitle) { 
+        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
+    }
+
+    cleaned = removeThisPattern(cleaned.title, "REPACK");
+    if (cleaned.subtitle) { 
+        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
+    }
+
     // Rimuovo tutti gli spazi multipli
     cleaned.title = cleaned.title.replace(/\s\s/ig, " ").trim();
+    // Rimuovo trattino finale, segno di una precedente pulizia
+    cleaned.title = cleaned.title.replace(/\-$/, "").trim();
 
     // Rimuovo numero di serie e numero di episodio (anche in range opzionale)
     const episodes   : string  = cleaned.title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9](-[0-9][0-9])?/ig)[0].trim();
