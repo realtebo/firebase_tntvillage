@@ -26,32 +26,11 @@ export const row_onwrite = async (
 
     const tv_show           : SimplyResultRow = new SimplyResultRow(change.after.val());
     const title_cleaned     : string          = cleanString(tv_show.title);
-    const tech_data_cleaned : string      = cleanString(tv_show.tech_data);
+    const tech_data_cleaned : string          = cleanString(tv_show.tech_data);
 
     if (tv_show.discarded) {
-        
-        
-        // Eseguo la migrazione al nuovo modello di flag
-        if (tv_show.discard_reason === "Serie TV ignorata") {
-            const show_already_banned = await db.ref(`banned_shows/${title_cleaned}`).once('value');
-            if (!show_already_banned.exists()) {
-                await db.ref(`banned_shows/${title_cleaned}`).set( nowAsString() );
-            }
-            return;
-
-        } 
-        
-        if (tv_show.discard_reason === "E' in inglese") {
-
-            const pattern_already_saved = await db.ref(`english_patterns/${tech_data_cleaned}`).once('value');
-            if (!pattern_already_saved.exists()) {
-                await db.ref(`english_patterns/${tech_data_cleaned}`).set( nowAsString() );
-            }
-            return;
-        }
-        
-        // Segnalo come grave il fatto che non sono stato in grado di identificare la ragione dello scarto
-        console.warn(`${full_hash} - ${title_cleaned} scartato: ${tv_show.discard_reason}`);
+        // console.log(`${full_hash} - ${title_cleaned} scartato: ${tv_show.discard_reason}`);
+        return
     }
 
     const notification_registry = await db.ref("notified/" + full_hash ).once('value');
@@ -66,70 +45,20 @@ export const row_onwrite = async (
         return;
     } 
 
-    const english_movies_ref  = await db.ref('english_patterns').once('value');
-    const english_movies_snap = english_movies_ref.val();
 
-    let english : boolean = false;
-    try {
-        // Si ferma e setta true al primo true che gli viene restituito
-        english = _.some(english_movies_snap, (value : string, key: string) => {
-            const cleanKey   : string = cleanString(key);
-            const cleanValue : string = cleanString(value);
-            return (
-                (tech_data_cleaned === cleanValue) 
-                ||
-                (tech_data_cleaned === value) 
-            );
-        });
-    } catch (e) {
-        console.warn ( 
-            "_.some(english_movies_snap) ha generato " + e.message 
-            + ", è di tipo " + (typeof english_movies_snap), 
-            "dump", english_movies_snap
-        );
-    }
-
-    if (english) {
+    // Verifico se riconosco un pattern inglese
+    const known_as_english = await db.ref(`english_patterns/${tech_data_cleaned}`).once('value');
+    if (known_as_english.exists()) {
         await change.after.ref.update({ discard_reason : "E' in inglese"});
         return;
-    } 
-
+    }
 
     // Verifico se è una delle serie tv che si è deciso di ignorare
-    const banned_shows_ref  = await db.ref('banned_shows').once('value');    
-    const banned_shows_snap = banned_shows_ref.val();
-
-    
-    // _.some(collection, [callback=identity], [thisArg])
-    // 
-    // Checks if the callback returns a truey value for any element of a collection. 
-    // The function returns as soon as it finds a passing value 
-    // and does not iterate over the entire collection. 
-    // The callback is bound to thisArg and invoked with three arguments; (value, index|key, collection).
-    //
-    // (boolean): Returns true if all elements passed the callback check, else false.
-
-    const show_is_banned : boolean = _.some(banned_shows_snap, (value, key) : boolean=> {
-
-        const value_cleaned = cleanString(value);
-        const key_cleaned   = cleanString(key);
-
-        // Confronto sia chiave che nome
-        // dal 11.07.2018 infatti, uso i nomi degli show come chiavi
-        // Perchè l'esito sia true,  il nome dello show non deve comparire ne in chiave ne in valore
-        return (
-            ( title_cleaned !== key_cleaned ) 
-            &&
-            ( title_cleaned !== value_cleaned ) 
-        );
-    })
-
-    if (show_is_banned) {
+    const show_already_banned = await db.ref(`banned_shows/${title_cleaned}`).once('value');
+    if (show_already_banned.exists()) {
         await change.after.ref.update({ discard_reason : "Serie TV ignorata"});
         return;
-    } 
-
-
+    }
 
     // Solo a questo punto sono libero di metterlo in coda come da notificare
     const date_to_set : string = nowAsString();

@@ -35,12 +35,13 @@ export const refresh = async () : Promise<boolean> => {
         const episodes  : string  = title_and_sub.episodes;
 
         // Tolgo i dati tecnici dalle altre info, e pulisco il tutto
-        // Si noti che tech_data sono privati di [ e ] perchè non sono validi
+        // Si noti che tech_data sono privati di '[', ']', e '.' perchè non sono validi
         // nelle chiavi
         const matches  : RegExpMatchArray | null  = info.match(/\[[^\]]*\]/ig);  
         let tech_data  : string                   = (matches ? matches[0] : "").trim();
         info                                      = cleanString(info.replace(tech_data, "").trim());
-        tech_data                                 = cleanString(tech_data.replace('[','').replace(']',''));
+        tech_data                                 = tech_data.replace('[','').replace(']','');
+        tech_data                                 = cleanString(tech_data.replace('.',''));
         
 
         // Cerco l'immagine della serie tv
