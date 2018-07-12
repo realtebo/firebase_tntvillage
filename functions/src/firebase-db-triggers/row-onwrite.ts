@@ -25,11 +25,9 @@ export const row_onwrite = async (
     }
 
     const tv_show           : SimplyResultRow = new SimplyResultRow(change.after.val());
-    const title_cleaned     : string          = cleanString(tv_show.title);
     const tech_data_cleaned : string          = cleanString(tv_show.tech_data);
 
     if (tv_show.discarded) {
-        // console.log(`${full_hash} - ${title_cleaned} scartato: ${tv_show.discard_reason}`);
         return
     }
 
@@ -54,6 +52,9 @@ export const row_onwrite = async (
     }
 
     // Verifico se è una delle serie tv che si è deciso di ignorare
+    let title_cleaned  : string = cleanString(tv_show.title);
+    // Sostituisco punto-spazio con spazio, altrimenti non posso usarlo come chiavo
+    title_cleaned = title_cleaned.replace(". ", " ");
     const show_already_banned = await db.ref(`banned_shows/${title_cleaned}`).once('value');
     if (show_already_banned.exists()) {
         await change.after.ref.update({ discard_reason : "Serie TV ignorata"});
