@@ -1,5 +1,4 @@
 import * as functions from 'firebase-functions';
-import * as _ from 'lodash';
 
 import { db } from '../app-helpers';
 import { SimplyResultRow } from '../objects/result-row';

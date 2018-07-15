@@ -43,23 +43,11 @@ export const refresh = async () : Promise<boolean> => {
         tech_data                                 = tech_data.replace('[','').replace(']','');
         tech_data                                 = cleanString(tech_data.replace('.',''));
         
-
         // Cerco l'immagine della serie tv
         const hash         : string                = makeHashAsPath(magnet);
         const episode_ref  : database.Reference    = db.ref(`rows/${hash}`);
-        const episode_snap : database.DataSnapshot = await episode_ref.once("value");
-        let image_url      : string;
+        const image_url    : string                = await searchImage(episode_ref, title);
 
-        // Per evitare chiamate API inutili, verifico se ce l'avevo già a db
-        if (!episode_snap.exists()) {
-            image_url = await searchImage(title);
-        } else {
-            const value : json_fmt = episode_snap.val();
-            image_url = value.image_url;
-            if (!image_url) {
-                image_url = await searchImage(title);
-            }
-        }
 
         // Ho tutti i dati per provvedere all'aggiornamento di questa riga
         // La classe SimplyResultRow fa alcune 'cose' e potenzialmente altre 
