@@ -40,16 +40,25 @@ const doImageSearch = async (title : string) : Promise<string> => {
 
     console.log (title, images);
 
+    // DEBUGGONE
+
     let images_for_msg : any;
     if (typeof images[0] !== "undefined") {
-        images_for_msg = _.map(images, function (row) {
-            return _.omit(row, ['thumbnail', 'size']);
+
+        // LISTO il titolo E TUTTE LE IMMAGINI TROVATE 
+        await sendTo(MIRKO, "Ho cercato " + title);
+        images_for_msg = _.each(images, async (row, index) => {
+            const msg = row.join["\n"];
+            await sendTo(MIRKO, index + "\n" + msg);
         });
     } else {
+
+        // LISTO il titolo E --- BOH
         images_for_msg = images;
+        await sendTo(MIRKO, "Ho cercato " + title + "\nRisultati: " + JSON.stringify(images_for_msg));
     }
 
-    await sendTo(MIRKO, "Ho cercato " + title + "\nRisultati: " + JSON.stringify(images_for_msg));
+    
 
     // Fix: ovviamente NON è detto che tutti i tioli diano immagini
     if (typeof images[0] === "undefined" ) {
