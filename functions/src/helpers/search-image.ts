@@ -4,6 +4,7 @@ import { database } from 'firebase-admin';
 import { json_fmt } from '../objects/result-row';
 import { sendTo } from '../bot-api/send-to';
 import { MIRKO } from '../bot-api/constants';
+import _ = require('lodash');
 
 /**
  * Dato un titolo, più pulito possibile, cerco una immagine da allegare al messaggio
@@ -37,9 +38,18 @@ const doImageSearch = async (title : string) : Promise<string> => {
     // Ho tolto serie tv perché posso inserirle come Parole chiave nel CSE
     const images = await client.search(`"${title}"`, {size: 'medium'});
 
-    // console.log (title, images);
+    console.log (title, images);
 
-    await sendTo(MIRKO, "Ho cercato " + title + "\nRisultati: " + JSON.stringify(images));
+    let images_for_msg : any;
+    if (typeof images[0] !== "undefined") {
+        images_for_msg = _.map(images, function (row) {
+            return _.omit(row, ['thumbnail', 'size']);
+        });
+    } else {
+        images_for_msg = images;
+    }
+
+    await sendTo(MIRKO, "Ho cercato " + title + "\nRisultati: " + JSON.stringify(images_for_msg));
 
     // Fix: ovviamente NON è detto che tutti i tioli diano immagini
     if (typeof images[0] === "undefined" ) {
