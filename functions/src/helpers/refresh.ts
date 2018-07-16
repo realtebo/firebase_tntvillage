@@ -79,7 +79,6 @@ export const refresh = async () : Promise<boolean> => {
         let json_output : json_fmt;
         try {
             json_output = row.toJson();
-            console.info('Refresh - Da Input', json_input, 'ottengo', json_output );
         } catch (e) {
             console.warn ("Refresh - row.toJson() throwed " + e.message ," from input: ", json_input, "to the row object", row) ;
         }
