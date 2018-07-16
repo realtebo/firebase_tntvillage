@@ -52,11 +52,20 @@ export const refresh = async () : Promise<boolean> => {
         let discard_reason   : string;
 
         // Verifico se è una delle serie tv che si è deciso di ignorare
-        const show_already_banned  : database.DataSnapshot = await db.ref(`banned_shows/${title}`).once('value');
         let banned                 : boolean               = false;
+        const show_already_banned  : database.DataSnapshot = await db.ref(`banned_shows/${title}`).once('value');
         if (show_already_banned.exists()) {
+            await db.ref(`banned_shows/${title}`).remove();
             discard_reason = 'Serie TV ignorata';
             banned         = true;
+        }
+        // Verifica alternativa, usando il nuovo sistema ad albero
+        const show_already_banned_v2  : database.DataSnapshot = await db.ref(`tv_show/${title}/banned`).once('value');
+        if (show_already_banned_v2.exists()) {
+            if (show_already_banned_v2.val() === true) {
+                discard_reason = 'Serie TV ignorata';
+                banned         = true;
+            }
         }
 
         // Ho tutti i dati per provvedere all'aggiornamento di questa riga
@@ -72,19 +81,19 @@ export const refresh = async () : Promise<boolean> => {
             json_output = row.toJson();
             console.info('Refresh - Da Input', json_input, 'ottengo', json_output );
         } catch (e) {
-            console.warn ("Refresh - row.toJson() throwed " + e.message + ", from input: " + json_input + ", to the row object", row) ;
+            console.warn ("Refresh - row.toJson() throwed " + e.message ," from input: ", json_input, "to the row object", row) ;
         }
 
         try {
             await episode_ref.update(json_output);
         } catch (e) {
-            console.warn ("Refresh - episoderef.update throwed " + e.message + " with the object", json_output);
+            console.warn ("Refresh - episoderef.update throwed " + e.message, "from input ", json_input, ", while update updating the object", json_output);
         }
 
         try {
             await saveRowAsTreeInfo (row);
         } catch (e) {
-            console.warn ("Refresh - saveRowAsTreeInfo throwed " + e.message + " with the object", json_output);
+            console.warn ("Refresh - saveRowAsTreeInfo throwed " + e.message, "from input ", json_input, "with the row obj", row);
         }
     });
         
@@ -98,16 +107,20 @@ const saveRowAsTreeInfo = async (row : SimplyResultRow) : Promise<void> => {
     const tree_ref  : database.Reference    = db.ref(`tv_show/${row.title}`);
     const tree_snap : database.DataSnapshot = await tree_ref.once("value");
 
+    const now_as_string : string = nowAsString();
+
     if (tree_snap.exists()) {
         tree_ref.update({ 
-            updated_on: nowAsString(),
-            banned:     row.banned,
+            updated_on:   now_as_string,
+            banned:       row.banned,
+            banned_since: now_as_string,
         });
 
     } else {
         tree_ref.set({ 
-            created_on: nowAsString() ,
-            banned:     row.banned,
+            created_on:   now_as_string ,
+            banned:       row.banned,
+            banned_since: now_as_string,
         })
     }
 }

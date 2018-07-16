@@ -70,9 +70,11 @@ class SimplyResultRow{
             this.image_url = json.image_url;
         }
 
-        if (json.banned) {
-            this.banned = json.banned;
-        } 
+        if (json.banned === true) {
+            this.banned = true;
+        } else if (json.banned === false) {
+            this.banned = false;
+        }
     };
 
     get hash () : string {

@@ -14,8 +14,14 @@ export const deleteShow = async (hash: string, chat_id: number, message_id: numb
 
         const title = cleanString(snap.title);
 
-        await db.ref(`banned_shows/${title}`).set( nowAsString() );
+        // await db.ref(`banned_shows/${title}`).set( nowAsString() );
 
+        // Verifica alternativa, usando il nuovo sistema ad albero
+        await db.ref(`tv_show/${title}`).update({ 
+            'banned'        : true,
+            'banned_since'  : nowAsString()
+        });
+        
         await sendTo(MIRKO, "Questo show è stato bannato\n" + title);
 
         await editMessage(chat_id, message_id, `La serie TV ${title} verrà ignorata`);
