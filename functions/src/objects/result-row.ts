@@ -5,8 +5,8 @@ import { nowAsString } from '../helpers/now-as-string';
  * @interface
  */
 interface TitleAndSubtitle {
-    title  : string,
-    subtitle?: string,
+    title     : string,
+    subtitle? : string,
 }
 
 /**
@@ -20,13 +20,13 @@ interface TitleSubEp extends TitleAndSubtitle {
  * @interface
  */
 interface json_fmt extends TitleSubEp {
-    magnet : string,
-    info   : string,
-    tech_data : string,
+    magnet          : string,
+    info            : string,
+    tech_data       : string,
     discard_reason? : string,
-    notified? : boolean,
-    last_seen? : string,
-    image_url? : string,
+    notified?       : boolean,
+    last_seen?      : string,
+    image_url?      : string,
 };
 
 class SimplyResultRow{

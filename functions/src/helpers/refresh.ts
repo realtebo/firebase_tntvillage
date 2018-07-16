@@ -4,7 +4,7 @@ import { db } from '../app-helpers';
 import * as network from '../network-helpers';
 import Response from '../objects/response';
 import { SimplyResultRow, json_fmt, TitleSubEp } from '../objects/result-row';
-import { cleanTitle } from './clean-title';
+import { separateDataFromTitle } from './clean-title';
 import { searchImage } from './search-image';
 import { database } from 'firebase-admin';
 import { makeHashAsPath } from './make-hash';
@@ -29,7 +29,8 @@ export const refresh = async () : Promise<boolean> => {
         let title         : string = $(element).find("TD:nth-child(7) A").text().trim();
         let info          : string = $(element).find("TD:nth-child(7) ").clone().children().remove().end().text().trim();
         
-        const title_and_sub  : TitleSubEp = cleanTitle(title);
+        // Title esce da qua già passato da cleanTitle, il quale lo passa anche a cleanString
+        const title_and_sub  : TitleSubEp = separateDataFromTitle(title);
         
         title                     = (title_and_sub.title);
         const subtitle  : string  = (title_and_sub.subtitle ? title_and_sub.subtitle : null);
@@ -45,15 +46,23 @@ export const refresh = async () : Promise<boolean> => {
         tech_data                                 = cleanString(tech_data.replace('.',''));
         
         // Cerco l'immagine della serie tv
-        const hash         : string                = makeHashAsPath(magnet);
-        const episode_ref  : database.Reference    = db.ref(`rows/${hash}`);
-        const image_url    : string                = await searchImage(episode_ref, title);
+        const hash           : string                = makeHashAsPath(magnet);
+        const episode_ref    : database.Reference    = db.ref(`rows/${hash}`);
+        const image_url      : string                = await searchImage(episode_ref, title);
+        let discard_reason   : string;
 
+        // Verifico se è una delle serie tv che si è deciso di ignorare
+        const show_already_banned       : database.DataSnapshot = await db.ref(`banned_shows/${title}`).once('value');
+        if (show_already_banned.exists()) {
+            discard_reason = 'Serie TV ignorata"';
+        }
 
         // Ho tutti i dati per provvedere all'aggiornamento di questa riga
         // La classe SimplyResultRow fa alcune 'cose' e potenzialmente altre 
         // in fase di input/outpt, non è un passaggio inutile
-        const json_input  : json_fmt        = {info, title, subtitle, magnet, episodes, tech_data, image_url};
+        const json_input  : json_fmt        = {
+            info, title, subtitle, magnet, episodes, tech_data, image_url, discard_reason
+        };
         const row         : SimplyResultRow = new SimplyResultRow(json_input);
 
         let json_output : json_fmt;

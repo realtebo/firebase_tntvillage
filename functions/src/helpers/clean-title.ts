@@ -5,23 +5,23 @@ import { cleanString } from './clean-string';
 // Helper privato
 const removeThisPattern = (title : string, patternToRemove : string) : TitleAndSubtitle => {
 
-    const cleanPattern     : string =  cleanString(patternToRemove);
-    const nearCleanTitle   : string =  cleanString(title);
+    const clean_pattern        : string =  cleanString(patternToRemove);
+    const semi_cleaned_title   : string =  cleanString(title);
 
-    if (nearCleanTitle.includes(cleanPattern) ) {
+    if (semi_cleaned_title.includes(clean_pattern) ) {
 
-        const regexp        : RegExp = new RegExp(cleanPattern,"ig");
-        const new_title     : string = cleanString(nearCleanTitle.replace(regexp, ""));
-        const new_subtitle  : string = cleanPattern;
+        const regexp        : RegExp = new RegExp(clean_pattern,"ig");
+        const new_title     : string = cleanString(semi_cleaned_title.replace(regexp, ""));
+        const new_subtitle  : string = clean_pattern;
 
-        return <json_fmt>{
+        return <TitleAndSubtitle>{
             title    : new_title,
             subtitle : new_subtitle
         }
 
     } else {
 
-        return {
+        return <TitleAndSubtitle>{
             title
         }
         
@@ -34,7 +34,7 @@ const removeThisPattern = (title : string, patternToRemove : string) : TitleAndS
  * @returns {TitleSubEp} Oggetto di tipo title_data con titolo pulito ed eventuali sottotitolo e espisodi
  * e string con gli episodi
  */
-export const cleanTitle = (title_to_clean : string) : TitleSubEp => {
+export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
 
     let out_subtitle : string = null;
     let cleaned : TitleAndSubtitle;
@@ -76,19 +76,27 @@ export const cleanTitle = (title_to_clean : string) : TitleSubEp => {
 
     // Rimuovo tutti gli spazi multipli
     cleaned.title = cleaned.title.replace(/\s\s/ig, " ").trim();
+    
     // Rimuovo trattino finale, segno di una precedente pulizia
     cleaned.title = cleaned.title.replace(/\-$/, "").trim();
 
     // Rimuovo numero di serie (anche in range opzione) 
     // e il numero di episodio (anche in range opzionale e anche se a tre cifre, per. es per "Il Segreto")
     const episodes : string  = cleaned.title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9]([0-9])?(-[0-9][0-9]([0-9])?)?/ig)[0].trim();
-    let out_title  : string  = cleaned.title.replace(episodes, "");
+    cleaned.title = cleaned.title.replace(episodes, "");
 
-    // Pulizia finale 
-    out_title = cleanString(out_title);
+    // Il punto non è accettato da firebase per le chiavi
+    cleaned.title  = cleaned.title.replace(".", " ");
+
+    // Rimuovo tutti gli spazi multipli
+    // Si questo è ripetuto ma i vari replace precedenti possono averlo reso necessario
+    cleaned.title = cleaned.title.replace(/\s\s/ig, " ").trim();
+
+    // Formattazione finale (uppercase e trim)
+    cleaned.title = cleanString(cleaned.title);
        
     return <TitleSubEp>{ 
-        title    : out_title, 
+        title    : cleaned.title, 
         subtitle : (out_subtitle ? out_subtitle : null) ,
         episodes : (episodes ? episodes : null),
     };
