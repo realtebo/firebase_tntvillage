@@ -41,7 +41,7 @@ class SimplyResultRow{
     public episodes         : string;
     public last_seen        : string;
     public image_url        : string;
-    public banned           : boolean
+    public banned           : boolean;
     
     constructor(json : json_fmt){
 
@@ -118,7 +118,7 @@ class SimplyResultRow{
         if (this.subtitle) {
             out.subtitle = this.subtitle;
         }
-        if (this.banned) {
+        if (this.banned !== null) {
             out.banned = this.banned;
         }
         return out;
