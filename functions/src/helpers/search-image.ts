@@ -45,7 +45,7 @@ const doImageSearch = async (title : string) : Promise<string> => {
     let images_for_msg : any;
     if (typeof images[0] !== "undefined") {
 
-        // LISTO il titolo E TUTTE LE IMMAGINI TROVATE 
+        // LISTO il titolo E LE PRIME IMMAGINI TROVATE 
         await sendTo(MIRKO, "Ho cercato " + title);
         images_for_msg = _.each(images, async (row, index) => {
             let data   = _.omit(row, ['thumbnail', 'size']);
@@ -53,21 +53,22 @@ const doImageSearch = async (title : string) : Promise<string> => {
             const msg  = _.map(data, (value, key) => `${key}: ${value}`);
             await sendTo(MIRKO, `${title} - ${index}` + "\n" + msg.join("\n"));
         });
+
+        return images[0].url;
+    } 
+    
+    if (Array.isArray(images) && images.length === 0 ) {
+
+        await sendTo(MIRKO, "Ho cercato " + title + " ma non ho nessun risultato");
+        
     } else {
 
         // LISTO il titolo E --- BOH
-        console.warn (title, images);
-        images_for_msg = images;
-        await sendTo(MIRKO, "Ho cercato " + title + "\nRisultati: " + JSON.stringify(images_for_msg));
+        console.warn("doImageSearch - Nessuna immagine trovata per '" + title + "'. Dati ricevuti dal search: " + typeof images, images);
+        await sendTo(MIRKO, "Ho cercato " + title + "\nRisultati: " + ( typeof images ) + " - " + JSON.stringify(images));
     }
 
+    return "";
     
-
-    // Fix: ovviamente NON è detto che tutti i tioli diano immagini
-    if (typeof images[0] === "undefined" ) {
-        console.warn("Nessuna immagine trovata per '" + title + "'. Dati ricevuti dal search: " + typeof images, images);
-        return "";
-    }
-    return images[0].url;
 
 }
