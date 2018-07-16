@@ -80,7 +80,7 @@ export const cleanTitle = (title_to_clean : string) : TitleSubEp => {
     cleaned.title = cleaned.title.replace(/\-$/, "").trim();
 
     // Rimuovo numero di serie e numero di episodio (anche in range opzionale)
-    const episodes : string  = cleaned.title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9](-[0-9][0-9])?/ig)[0].trim();
+    const episodes : string  = cleaned.title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9]([0-9])?(-[0-9][0-9]([0-9]))?/ig)[0].trim();
     let out_title  : string  = cleaned.title.replace(episodes, "");
 
     // Pulizia finale 

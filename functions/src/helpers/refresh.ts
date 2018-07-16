@@ -57,11 +57,10 @@ export const refresh = async () : Promise<boolean> => {
         const row         : SimplyResultRow = new SimplyResultRow(json_input);
 
         let json_output : json_fmt;
-        console.log ("json_input", json_input, "output", row.toJson()) ;
         try {
             json_output = row.toJson();
         } catch (e) {
-            console.warn ("Refresh - row.toJson() throwed " + e.message + " with the row", row) ;
+            console.warn ("Refresh - row.toJson() throwed " + e.message + ", from input: " + json_input + ", to the row object", row) ;
         }
 
         try {
