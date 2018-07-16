@@ -38,7 +38,7 @@ const doImageSearch = async (title : string) : Promise<string> => {
     // Ho tolto serie tv perché posso inserirle come Parole chiave nel CSE
     const images = await client.search(`"${title}"`, {size: 'medium'});
 
-    console.log (title, images);
+    
 
     // DEBUGGONE
 
@@ -48,12 +48,15 @@ const doImageSearch = async (title : string) : Promise<string> => {
         // LISTO il titolo E TUTTE LE IMMAGINI TROVATE 
         await sendTo(MIRKO, "Ho cercato " + title);
         images_for_msg = _.each(images, async (row, index) => {
-            const msg = row.join["\n"];
-            await sendTo(MIRKO, index + "\n" + msg);
+            let data   = _.omit(row, ['thumbnail', 'size']);
+            data       = _.slice(data, 0, 3);
+            const msg  = _.map(data, (value, key) => `${key}: ${value}`);
+            await sendTo(MIRKO, `${title} - ${index}` + "\n" + msg.join("\n"));
         });
     } else {
 
         // LISTO il titolo E --- BOH
+        console.warn (title, images);
         images_for_msg = images;
         await sendTo(MIRKO, "Ho cercato " + title + "\nRisultati: " + JSON.stringify(images_for_msg));
     }

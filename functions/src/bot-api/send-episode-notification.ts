@@ -82,7 +82,7 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
                 console.warn("Telegram sendPhoto KO", error.response.data);
             }); 
     } else {
-        console.log ( "Spedizione a Rita disattiva !");
+        console.info ( "Spedizione a Rita disattiva !");
     }
 
     // Funzionalità sperimentali

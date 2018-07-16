@@ -8,6 +8,12 @@ export const sendTo = async (chat_id: number, text: string) : Promise<void> => {
     }
     await axios.post(TELEGRAM_API + "sendMessage", reply_telegram)
         .catch( (error : AxiosError) => {
-            console.warn("Telegram KO", error.response.data);
+            if (typeof error.response.data !== 'undefined') {
+                console.warn("sendTo - Telegram KO", error.response.data);
+            } else if (typeof error.response !== 'undefined') {
+                console.warn("sendTo - Telegram KO, and response has no data", error.response);
+            } else {
+                console.warn("sendTo - Telegram KO, and error object is strange... ", error);
+            }
         }) ;   
 }

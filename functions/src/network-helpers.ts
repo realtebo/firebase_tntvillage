@@ -10,7 +10,7 @@ import Query from './objects/query';
  * Non genera errore
  */
 const getPage = async (page_number: number, category_number: number) : Promise<Response> => {
-    // console.log (`getPage: Page ${page_number} - Cat ${category_number}`)
+
     const post_data: PostData = new PostData(page_number, category_number);
     const tnt_query: Query = new Query(post_data);
     const response : Response = await tnt_query.execute();

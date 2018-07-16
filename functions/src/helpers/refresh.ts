@@ -9,6 +9,7 @@ import { searchImage } from './search-image';
 import { database } from 'firebase-admin';
 import { makeHashAsPath } from './make-hash';
 import { cleanString } from './clean-string';
+import { nowAsString } from './now-as-string';
 
 export const refresh = async () : Promise<boolean> => {
 
@@ -59,17 +60,35 @@ export const refresh = async () : Promise<boolean> => {
         try {
             json_output = row.toJson();
         } catch (e) {
-            console.warn ("Refresh row.toJson throwed " + e.message + " with the row", row) ;
+            console.warn ("Refresh - row.toJson() throwed " + e.message + " with the row", row) ;
         }
 
         try {
             await episode_ref.update(json_output);
         } catch (e) {
-            console.warn ("Refresh episode_ref.update throwed " + e.message + " with the object", json_output);
+            console.warn ("Refresh - episoderef.update throwed " + e.message + " with the object", json_output);
+        }
+
+        try {
+            await saveRowAsTreeInfo (row);
+        } catch (e) {
+            console.warn ("Refresh - saveRowAsTreeInfo throwed " + e.message + " with the object", json_output);
         }
     });
         
     await db.ref('refresh').remove();
 
     return true;
+}
+
+const saveRowAsTreeInfo = async (row : SimplyResultRow) : Promise<void> => {
+    
+    const tree_ref  : database.Reference    = db.ref(`tv_show/${row.title}`);
+    const tree_snap : database.DataSnapshot = await tree_ref.once("value");
+
+    if (tree_snap.exists()) {
+        tree_ref.update({ updated_on: nowAsString() });
+    } else {
+        tree_ref.set({ created_on: nowAsString() })
+    }
 }

@@ -9,8 +9,6 @@ import { cleanString } from '../helpers/clean-string';
 
 export const deleteShow = async (hash: string, chat_id: number, message_id: number) => {
 
-    // console.log (`deleteShow hash: ${hash}, chat_id: ${chat_id}, message_id: ${message_id}`);
-
     try {
         const snap : json_fmt = await get_snap_from_hash(hash);
 

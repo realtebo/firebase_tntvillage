@@ -19,7 +19,6 @@ export const row_onwrite = async (
     ].join("-");
 
     if (!change.after.exists()) {
-        // console.log(`${full_hash} cancellato`);
         return;
     }
 
@@ -32,13 +31,11 @@ export const row_onwrite = async (
 
     const notification_registry = await db.ref("notified/" + full_hash ).once('value');
     if (notification_registry.exists()) {
-        // console.log(`${full_hash} già notificato`);
         return;
     } 
 
     const queued_notification_registry = await db.ref("to_notify/" + full_hash ).once('value');
     if (queued_notification_registry.exists()) {
-        // console.log(`${full_hash} già in coda da notificare`);
         return;
     } 
 
@@ -62,7 +59,6 @@ export const row_onwrite = async (
 
     // Solo a questo punto sono libero di metterlo in coda come da notificare
     const date_to_set : string = nowAsString();
-    // console.log ("Segno da notificare", full_hash)
     await db.ref("to_notify/" + full_hash).set(date_to_set);
     return;
 }

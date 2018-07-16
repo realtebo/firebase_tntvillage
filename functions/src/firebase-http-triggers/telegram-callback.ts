@@ -51,8 +51,6 @@ export const telegram_callback  = async (req : functions.Request, res : function
     // Messaggio diretto
     if (body.callback_query) {
 
-        // console.log(body.callback_query);
-
         const query = _.chain(body.callback_query.data)
             .split('&')                         // ["a=b454","c=dhjjh","f=g6hksdfjlksd"]
             .map(_.partial(_.split, _, '=', 2)) // [["a","b454"],["c","dhjjh"],["f","g6hksdfjlksd"]]
