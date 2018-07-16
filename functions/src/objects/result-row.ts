@@ -27,6 +27,7 @@ interface json_fmt extends TitleSubEp {
     notified?       : boolean,
     last_seen?      : string,
     image_url?      : string,
+    banned?         : boolean,
 };
 
 class SimplyResultRow{
@@ -40,6 +41,7 @@ class SimplyResultRow{
     public episodes         : string;
     public last_seen        : string;
     public image_url        : string;
+    public banned           : boolean
     
     constructor(json : json_fmt){
 
@@ -67,6 +69,10 @@ class SimplyResultRow{
         if (json.image_url) {
             this.image_url = json.image_url;
         }
+
+        if (json.banned) {
+            this.banned = json.banned;
+        } 
     };
 
     get hash () : string {
@@ -111,6 +117,9 @@ class SimplyResultRow{
         }
         if (this.subtitle) {
             out.subtitle = this.subtitle;
+        }
+        if (this.banned) {
+            out.banned = this.banned;
         }
         return out;
     }

@@ -52,16 +52,18 @@ export const refresh = async () : Promise<boolean> => {
         let discard_reason   : string;
 
         // Verifico se è una delle serie tv che si è deciso di ignorare
-        const show_already_banned       : database.DataSnapshot = await db.ref(`banned_shows/${title}`).once('value');
+        const show_already_banned  : database.DataSnapshot = await db.ref(`banned_shows/${title}`).once('value');
+        let banned                 : boolean               = false;
         if (show_already_banned.exists()) {
-            discard_reason = 'Serie TV ignorata"';
+            discard_reason = 'Serie TV ignorata';
+            banned         = true;
         }
 
         // Ho tutti i dati per provvedere all'aggiornamento di questa riga
         // La classe SimplyResultRow fa alcune 'cose' e potenzialmente altre 
         // in fase di input/outpt, non è un passaggio inutile
         const json_input  : json_fmt        = {
-            info, title, subtitle, magnet, episodes, tech_data, image_url, discard_reason
+            info, title, subtitle, magnet, episodes, tech_data, image_url, banned, discard_reason
         };
         const row         : SimplyResultRow = new SimplyResultRow(json_input);
 
@@ -96,8 +98,15 @@ const saveRowAsTreeInfo = async (row : SimplyResultRow) : Promise<void> => {
     const tree_snap : database.DataSnapshot = await tree_ref.once("value");
 
     if (tree_snap.exists()) {
-        tree_ref.update({ updated_on: nowAsString() });
+        tree_ref.update({ 
+            updated_on: nowAsString(),
+            banned:     row.banned,
+        });
+
     } else {
-        tree_ref.set({ created_on: nowAsString() })
+        tree_ref.set({ 
+            created_on: nowAsString() ,
+            banned:     row.banned,
+        })
     }
 }

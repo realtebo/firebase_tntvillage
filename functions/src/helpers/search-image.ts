@@ -41,20 +41,21 @@ const doImageSearch = async (title : string) : Promise<string> => {
     
 
     // DEBUGGONE
-
-    let images_for_msg : any;
-    if (typeof images[0] !== "undefined") {
+    if (Array.isArray(images) && images.length > 0 ) {
 
         // LISTO il titolo E LE PRIME IMMAGINI TROVATE 
         await sendTo(MIRKO, "Ho cercato " + title);
-        images_for_msg = _.each(images, async (row, index) => {
-            let data   = _.omit(row, ['thumbnail', 'size']);
-            data       = _.slice(data, 0, 3);
+
+        // Array contenente tre oggetti con ciascuno i dati di una singola immagine
+        const images_sliced : any[] = _.slice(images, 0, 3);
+        
+        const images_for_msg = _.each(images_sliced, async (row : any[], index : number) => {
+            const data = _.omit(row, ['thumbnail', 'size']);
             const msg  = _.map(data, (value, key) => `${key}: ${value}`);
             await sendTo(MIRKO, `${title} - ${index}` + "\n" + msg.join("\n"));
         });
 
-        return images[0].url;
+        return images_for_msg[0].url;
     } 
     
     if (Array.isArray(images) && images.length === 0 ) {
