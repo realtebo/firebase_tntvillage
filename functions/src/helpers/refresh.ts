@@ -102,24 +102,49 @@ export const refresh = async () : Promise<boolean> => {
 }
 
 const saveRowAsTreeInfo = async (row : SimplyResultRow) : Promise<void> => {
-    
-    const tree_ref  : database.Reference    = db.ref(`tv_show/${row.title}`);
-    const tree_snap : database.DataSnapshot = await tree_ref.once("value");
 
     const now_as_string : string = nowAsString();
+    const new_obj       : any = {};
 
+    // Aggiorna la data di inserimento o di creazione
+    const tree_ref  : database.Reference    = db.ref(`tv_show/${row.title}`);
+    const tree_snap : database.DataSnapshot = await tree_ref.once("value");
     if (tree_snap.exists()) {
-        tree_ref.update({ 
-            updated_on:   now_as_string,
-            banned:       row.banned,
-            banned_since: now_as_string,
-        });
-
+        new_obj.updated_on = now_as_string;
     } else {
-        tree_ref.set({ 
-            created_on:   now_as_string ,
-            banned:       row.banned,
-            banned_since: now_as_string,
-        })
+        new_obj.created_on = now_as_string;
     }
+
+    // Stato del ban
+    const banned_info_ref     : database.Reference    = db.ref(`tv_show/${row.title}/banned`);
+    const banned_info_snap    : database.DataSnapshot = await banned_info_ref.once("value");
+    const banned_info_exists  : boolean               = banned_info_snap.exists();
+    const banned_info_changed : boolean               = (banned_info_exists && (<boolean>banned_info_snap.val() !== row.banned));
+
+    // Aggiorno solo se esisteva gia ed ora è diverso
+    if (banned_info_exists) {
+        if (banned_info_changed) {
+            new_obj.banned = row.banned;
+        }
+        if (row.banned) {
+            new_obj.banned_since = now_as_string;
+        } else {
+            // Rimuovo il banned_since se non è più bannato
+            const banned_since_ref   : database.Reference    = db.ref(`tv_show/${row.title}/banned_since`);
+            const banned_since_snap  : database.DataSnapshot = await banned_since_ref.once("value");
+            if (banned_since_snap.exists()) {
+                await banned_since_ref.remove(); 
+            }  
+        }
+    } else {
+        // il flag del banner non esiste, lo creo
+        new_obj.banned = row.banned;
+        // Se bannato, segno il momento di inizio ban
+        if (row.banned) {
+            new_obj.banned_since = now_as_string;
+        }
+    }
+
+    // Eseguo un unico update
+    await tree_snap.ref.update(new_obj);
 }
