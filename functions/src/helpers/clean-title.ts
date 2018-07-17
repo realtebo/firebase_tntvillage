@@ -95,6 +95,10 @@ export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
     // Formattazione finale (uppercase e trim)
     cleaned.title = cleanString(cleaned.title);
        
+    const seasons : any  = cleaned.title.match(/s([0-9][0-9](-[0-9][0-9])?)e/ig);
+
+    console.info("Sperimentale: identificazione stagione", cleaned.title, seasons);
+
     return <TitleSubEp>{ 
         title    : cleaned.title, 
         subtitle : (out_subtitle ? out_subtitle : null) ,
