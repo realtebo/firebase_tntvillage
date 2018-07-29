@@ -1,4 +1,4 @@
-import { json_fmt, TitleAndSubtitle, TitleSubEp } from '../objects/result-row';
+import { TitleAndSubtitle, TitleSubEp } from '../objects/result-row';
 import { cleanString } from './clean-string';
 
 
@@ -69,10 +69,23 @@ export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
         out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
     }
 
+    cleaned = removeThisPattern(cleaned.title, "VERSIONE 720P");
+    if (cleaned.subtitle) { 
+        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
+    }
+
     cleaned = removeThisPattern(cleaned.title, "REPACK");
     if (cleaned.subtitle) { 
         out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
     }
+
+    cleaned = removeThisPattern(cleaned.title, "FIXED");
+    if (cleaned.subtitle) { 
+        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
+    }
+
+    // Rimuovo le parentesi dall'indicazione dell'anno
+    cleaned.title = cleaned.title.replace(/\((20[0-9][0-9])\)/ig, "$1").trim();
 
     // Rimuovo tutti gli spazi multipli
     cleaned.title = cleaned.title.replace(/\s\s/ig, " ").trim();
@@ -95,9 +108,9 @@ export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
     // Formattazione finale (uppercase e trim)
     cleaned.title = cleanString(cleaned.title);
        
-    const seasons : any  = cleaned.title.match(/s([0-9][0-9](-[0-9][0-9])?)e/ig);
+    const seasons : any  = episodes.match(/s([0-9][0-9](-[0-9][0-9])?)e/ig);
 
-    console.info("Sperimentale: identificazione stagione", cleaned.title, seasons);
+    console.info("Sperimentale: identificazione stagione", cleaned.title, episodes, seasons);
 
     return <TitleSubEp>{ 
         title    : cleaned.title, 

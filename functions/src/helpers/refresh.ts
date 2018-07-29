@@ -53,12 +53,7 @@ export const refresh = async () : Promise<boolean> => {
 
         // Verifico se è una delle serie tv che si è deciso di ignorare
         let banned                 : boolean               = false;
-        const show_already_banned  : database.DataSnapshot = await db.ref(`banned_shows/${title}`).once('value');
-        if (show_already_banned.exists()) {
-            await db.ref(`banned_shows/${title}`).remove();
-            discard_reason = 'Serie TV ignorata';
-            banned         = true;
-        }
+        
         // Verifica alternativa, usando il nuovo sistema ad albero
         const show_already_banned_v2  : database.DataSnapshot = await db.ref(`tv_show/${title}/banned`).once('value');
         if (show_already_banned_v2.exists()) {

@@ -56,7 +56,7 @@ class SimplyResultRow{
         this.episodes   = json.episodes;
         this.tech_data  = json.tech_data;
 
-        if (json.discard_reason) {
+        if (json.discard_reason && typeof json.discard_reason !== 'undefined' ) {
             this.discard_reason = json.discard_reason;
         }
 
