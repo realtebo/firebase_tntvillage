@@ -115,24 +115,30 @@ const saveRowAsTreeInfo = async (row : SimplyResultRow) : Promise<void> => {
     const banned_info_snap    : database.DataSnapshot = await banned_info_ref.once("value");
     const banned_info_exists  : boolean               = banned_info_snap.exists();
     const banned_info_changed : boolean               = (banned_info_exists && (<boolean>banned_info_snap.val() !== row.banned));
+    const banned_since_ref    : database.Reference    = db.ref(`tv_show/${row.title}/banned_since`);
+    const banned_since_snap   : database.DataSnapshot = await banned_since_ref.once("value");
 
     // Aggiorno solo se esisteva gia ed ora è diverso
     if (banned_info_exists) {
+        // il flag del ban esiste
         if (banned_info_changed) {
             new_obj.banned = row.banned;
         }
+               
         if (row.banned) {
-            new_obj.banned_since = now_as_string;
+            // Se è bannato, ma non ho la data la inserisco
+            if (!banned_since_snap.exists()) {
+                new_obj.banned_since = now_as_string;
+            }
         } else {
             // Rimuovo il banned_since se non è più bannato
-            const banned_since_ref   : database.Reference    = db.ref(`tv_show/${row.title}/banned_since`);
-            const banned_since_snap  : database.DataSnapshot = await banned_since_ref.once("value");
+            
             if (banned_since_snap.exists()) {
                 await banned_since_ref.remove(); 
             }  
         }
     } else {
-        // il flag del banner non esiste, lo creo
+        // il flag del ban non esiste, lo creo
         new_obj.banned = row.banned;
         // Se bannato, segno il momento di inizio ban
         if (row.banned) {

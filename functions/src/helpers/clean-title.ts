@@ -95,7 +95,8 @@ export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
 
     // Rimuovo numero di serie (anche in range opzione) 
     // e il numero di episodio (anche in range opzionale e anche se a tre cifre, per. es per "Il Segreto")
-    const episodes : string  = cleaned.title.match(/s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9]([0-9])?(-[0-9][0-9]([0-9])?)?/ig)[0].trim();
+    const season_pattern : RegExp = /s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9]([0-9])?(-[0-9][0-9]([0-9])?)?/ig;
+    const episodes       : string = cleaned.title.match(season_pattern)[0].trim();
     cleaned.title = cleaned.title.replace(episodes, "");
 
     // Il punto non è accettato da firebase per le chiavi
@@ -107,10 +108,16 @@ export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
 
     // Formattazione finale (uppercase e trim)
     cleaned.title = cleanString(cleaned.title);
-       
-    const seasons : any  = episodes.match(/s([0-9][0-9](-[0-9][0-9])?)e/ig);
+    
+    const find_season_pattern : RegExp = /s([0-9][0-9](-[0-9][0-9])?)e[0-9][0-9]([0-9])?(-[0-9][0-9]([0-9])?)?/ig;
+    const seasons : any  = episodes.match(find_season_pattern);
 
-    console.info("Sperimentale: identificazione stagione", cleaned.title, episodes, seasons);
+    console.info({
+        'type'      : "Sperimentale", 
+        'title'     : cleaned.title, 
+        'episodes'  : episodes, 
+        'seasons'   : seasons
+    });
 
     return <TitleSubEp>{ 
         title    : cleaned.title, 
