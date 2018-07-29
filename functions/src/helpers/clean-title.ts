@@ -109,8 +109,8 @@ export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
     // Formattazione finale (uppercase e trim)
     cleaned.title = cleanString(cleaned.title);
     
-    const find_season_pattern : RegExp = /s([0-9][0-9](-[0-9][0-9])?)e[0-9][0-9]([0-9])?(-[0-9][0-9]([0-9])?)?/ig;
-    const seasons : any  = episodes.match(find_season_pattern);
+    const find_season_pattern : RegExp = /(s[0-9][0-9](-[0-9][0-9])?)e[0-9][0-9]([0-9])?(-[0-9][0-9]([0-9])?)?/ig;
+    const seasons : RegExpMatchArray = episodes.match(find_season_pattern);
 
     console.info({
         'type'      : "Sperimentale", 
