@@ -114,7 +114,7 @@ class SimplyResultRow{
             "last_seen" : this.last_seen,
             'image_url' : this.image_url,
         };
-        if (this.discard_reason) {
+        if (this.discard_reason && typeof this.discard_reason !== "undefined" ) {
             out.discard_reason = this.discard_reason;
         }
         if (this.subtitle) {
