@@ -40,14 +40,7 @@ const doImageSearch = async (title : string) : Promise<string> => {
 
     if (Array.isArray(images) && images.length > 0 ) {
 
-        // Array contenente tre oggetti con ciascuno i dati di una singola immagine
-        const images_sliced : any[] = _.slice(images, 0, 3);
-        
-        const images_for_msg = _.each(images_sliced, async (row : any[], index : number) => {
-            const data = _.omit(row, ['thumbnail', 'size']);
-        });
-
-        return images_for_msg[0].url;
+        return images[0].url;
     } 
     
     if (Array.isArray(images) && images.length === 0 ) {
