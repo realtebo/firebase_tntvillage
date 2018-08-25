@@ -1,30 +1,25 @@
 import { TitleAndSubtitle, TitleSubEp } from '../objects/result-row';
 import { cleanString } from './clean-string';
+import { SEAESON_REGEXP_GLOBAL } from './constants';
 
 
 // Helper privato
-const removeThisPattern = (title : string, patternToRemove : string) : TitleAndSubtitle => {
+const moveToSubtitle = (title : string, patternToMove : string) : TitleAndSubtitle => {
 
-    const clean_pattern        : string =  cleanString(patternToRemove);
-    const semi_cleaned_title   : string =  cleanString(title);
+    const clean_pattern : string = cleanString(patternToMove);
+    let new_title       : string = cleanString(title);
+    let new_subtitle    : string = null;
 
-    if (semi_cleaned_title.includes(clean_pattern) ) {
+    if (new_title.includes(clean_pattern) ) {
 
-        const regexp        : RegExp = new RegExp(clean_pattern,"ig");
-        const new_title     : string = cleanString(semi_cleaned_title.replace(regexp, ""));
-        const new_subtitle  : string = clean_pattern;
+        const regexp : RegExp = new RegExp(clean_pattern,"ig");
+        new_title             = cleanString(new_title.replace(regexp, ""));
+        new_subtitle          = clean_pattern;
+    }
 
-        return <TitleAndSubtitle>{
-            title    : new_title,
-            subtitle : new_subtitle
-        }
-
-    } else {
-
-        return <TitleAndSubtitle>{
-            title
-        }
-        
+    return <TitleAndSubtitle>{
+        title    : new_title,
+        subtitle : new_subtitle
     }
 }
 
@@ -37,90 +32,67 @@ const removeThisPattern = (title : string, patternToRemove : string) : TitleAndS
 export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
 
     let out_subtitle : string = null;
-    let cleaned : TitleAndSubtitle;
+    let cleaned_obj  : TitleAndSubtitle;
 
-    cleaned = removeThisPattern(title_to_clean, "COMPLETE SEASON");
-    if (cleaned.subtitle) { 
-        out_subtitle = cleaned.subtitle;
-    }
-
-    cleaned = removeThisPattern(cleaned.title, "STAGIONE COMPLETA");
-    if (cleaned.subtitle) { 
-        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
-    }
-
-    cleaned = removeThisPattern(cleaned.title, "COMPLETA");
-    if (cleaned.subtitle) { 
-        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
-    }
-
-    cleaned = removeThisPattern(cleaned.title, "SEASON FINALE");
-    if (cleaned.subtitle) { 
-        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
-    }
-
-    cleaned = removeThisPattern(cleaned.title, "V 1080");
-    if (cleaned.subtitle) { 
-        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
-    }
-
-    cleaned = removeThisPattern(cleaned.title, "V 720");
-    if (cleaned.subtitle) { 
-        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
-    }
-
-    cleaned = removeThisPattern(cleaned.title, "VERSIONE 720P");
-    if (cleaned.subtitle) { 
-        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
-    }
-
-    cleaned = removeThisPattern(cleaned.title, "REPACK");
-    if (cleaned.subtitle) { 
-        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
-    }
-
-    cleaned = removeThisPattern(cleaned.title, "FIXED");
-    if (cleaned.subtitle) { 
-        out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned.subtitle : cleaned.subtitle) ;
-    }
-
+    cleaned_obj = moveToSubtitle(title_to_clean, "COMPLETE SEASON");
+    out_subtitle = cleaned_obj.subtitle;
+    
+    cleaned_obj = moveToSubtitle(cleaned_obj.title, "STAGIONE COMPLETA");
+    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    
+    cleaned_obj = moveToSubtitle(cleaned_obj.title, "COMPLETA");
+    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    
+    cleaned_obj = moveToSubtitle(cleaned_obj.title, "SEASON FINALE");
+    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    
+    cleaned_obj = moveToSubtitle(cleaned_obj.title, "V 1080");
+    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    
+    cleaned_obj = moveToSubtitle(cleaned_obj.title, "V 720");
+    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    
+    cleaned_obj = moveToSubtitle(cleaned_obj.title, "VERSIONE 720P");
+    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    
+    cleaned_obj = moveToSubtitle(cleaned_obj.title, "REPACK");
+    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    
+    cleaned_obj = moveToSubtitle(cleaned_obj.title, "FIXED");
+    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    
     // Rimuovo le parentesi dall'indicazione dell'anno
-    cleaned.title = cleaned.title.replace(/\((20[0-9][0-9])\)/ig, "$1").trim();
+    cleaned_obj.title = cleaned_obj.title.replace(/\((20[0-9][0-9])\)/ig, "$1").trim();
 
     // Rimuovo tutti gli spazi multipli
-    cleaned.title = cleaned.title.replace(/\s\s/ig, " ").trim();
+    cleaned_obj.title = cleaned_obj.title.replace(/\s\s/ig, " ").trim();
     
     // Rimuovo trattino finale, segno di una precedente pulizia
-    cleaned.title = cleaned.title.replace(/\-$/, "").trim();
+    cleaned_obj.title = cleaned_obj.title.replace(/\-$/, "").trim();
 
-    // Rimuovo numero di serie (anche in range opzione) 
-    // e il numero di episodio (anche in range opzionale e anche se a tre cifre, per. es per "Il Segreto")
-    const season_pattern : RegExp = /s[0-9][0-9](-[0-9][0-9])?e[0-9][0-9]([0-9])?(-[0-9][0-9]([0-9])?)?/ig;
-    const episodes       : string = cleaned.title.match(season_pattern)[0].trim();
-    cleaned.title = cleaned.title.replace(episodes, "");
+    const episodes_matches : string[] = cleaned_obj.title.match(SEAESON_REGEXP_GLOBAL);
+   
+    if (episodes_matches === null) {
+        throw new Error(`Impossibile matchare stagione/episodi dal titolo ${cleaned_obj.title}`);
+    }
+    const episodes         : string   = episodes_matches[0].trim();
+    
+    
+    cleaned_obj.title = cleaned_obj.title.replace(episodes, "");
 
     // Il punto non è accettato da firebase per le chiavi
-    cleaned.title  = cleaned.title.replace(".", " ");
+    cleaned_obj.title     = cleaned_obj.title.replace(".", " ");
+    out_subtitle  = (out_subtitle ? out_subtitle.replace(".", " ") : null);  // Per esempio AC5.1 => AC51
 
     // Rimuovo tutti gli spazi multipli
     // Si questo è ripetuto ma i vari replace precedenti possono averlo reso necessario
-    cleaned.title = cleaned.title.replace(/\s\s/ig, " ").trim();
+    cleaned_obj.title = cleaned_obj.title.replace(/\s\s/ig, " ").trim();
 
     // Formattazione finale (uppercase e trim)
-    cleaned.title = cleanString(cleaned.title);
+    cleaned_obj.title = cleanString(cleaned_obj.title);
     
-    const find_season_pattern : RegExp = /(s[0-9][0-9](-[0-9][0-9])?)e[0-9][0-9]([0-9])?(-[0-9][0-9]([0-9])?)?/ig;
-    const seasons : RegExpMatchArray = episodes.match(find_season_pattern);
-
-    console.info({
-        'type'      : "Sperimentale", 
-        'title'     : cleaned.title, 
-        'episodes'  : episodes, 
-        'seasons'   : seasons
-    });
-
     return <TitleSubEp>{ 
-        title    : cleaned.title, 
+        title    : cleaned_obj.title, 
         subtitle : (out_subtitle ? out_subtitle : null) ,
         episodes : (episodes ? episodes : null),
     };

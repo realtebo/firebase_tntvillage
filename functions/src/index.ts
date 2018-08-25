@@ -25,7 +25,7 @@ exports.callback = functions.https.onRequest( telegram_callback );
  *************************/
 
 // E' variato qualche dato di un episodio
-exports.onRowChanged = functions.database.ref(`rows/{seg_1}/{seg_2}/{seg_3}/{seg_4}/{seg_5}`)
+exports.onRowChanged = functions.database.ref(`rows/{seg_1}/{seg_2}`)
     .onWrite ( row_onwrite );
 
 // E' stata aggiunta una nuova notifica in coda

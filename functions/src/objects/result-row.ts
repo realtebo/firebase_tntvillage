@@ -1,5 +1,6 @@
 import { makeHashAsPath } from '../helpers/make-hash';
 import { nowAsString } from '../helpers/now-as-string';
+import { episodesToItalian } from '../helpers/episodes_to_italian';
 
 /**
  * @interface
@@ -28,6 +29,8 @@ interface json_fmt extends TitleSubEp {
     last_seen?      : string,
     image_url?      : string,
     banned?         : boolean,
+    season_it?      : string,
+    episode_it?     : string,
 };
 
 class SimplyResultRow{
@@ -89,7 +92,9 @@ class SimplyResultRow{
     public toString = () : string =>  {
         return this.title 
                 + (this.subtitle ? "\n" + this.subtitle : "");
-                + "\n" + this.episodes
+                + "\n" + episodesToItalian(this.episodes).season_it
+                + "\n" + episodesToItalian(this.episodes).episode_it
+                + "\n[" + this.episodes + "]"
                 + "\n" + this.tech_data
                 + "\n" + this.info 
                 + "\n" + this.last_seen
@@ -99,20 +104,27 @@ class SimplyResultRow{
     public toHtml = () : string => {
         return "<b>" + this.title + "</b>"
             + (this.subtitle ? "\n" + this.subtitle : "")
-            + "\n" + this.episodes
-            + "\n" + this.tech_data
+            + "\n<i>" 
+                + episodesToItalian(this.episodes).season_it
+                + "</i>"
+            + "\n<i>" 
+                + episodesToItalian(this.episodes).episode_it
+                + "</i>"
+            + " [" + this.episodes + "]"
+            + "\n\n" + this.tech_data
             + "\n" + this.info ;
     }
 
     public toJson = () : json_fmt => {
         const out  : json_fmt = {
-            "magnet"    : this.magnet, 
-            "title"     : this.title, 
-            "info"      : this.info, 
-            "tech_data" : this.tech_data,
-            "episodes"  : this.episodes,
-            "last_seen" : this.last_seen,
-            'image_url' : this.image_url,
+            "magnet"      : this.magnet, 
+            "title"       : this.title, 
+            "info"        : this.info, 
+            "tech_data"   : this.tech_data,
+            "episode_it"  : episodesToItalian(this.episodes).episode_it,
+            "season_it"   : episodesToItalian(this.episodes).season_it, 
+            "episodes"    : this.episodes,
+            "last_seen"   : this.last_seen,
         };
         if (this.discard_reason && typeof this.discard_reason !== "undefined" ) {
             out.discard_reason = this.discard_reason;

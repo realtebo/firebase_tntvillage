@@ -5,7 +5,6 @@ import * as network from '../network-helpers';
 import Response from '../objects/response';
 import { SimplyResultRow, json_fmt, TitleSubEp } from '../objects/result-row';
 import { separateDataFromTitle } from './clean-title';
-import { searchImage } from './search-image';
 import { database } from 'firebase-admin';
 import { makeHashAsPath } from './make-hash';
 import { cleanString } from './clean-string';
@@ -48,7 +47,6 @@ export const refresh = async () : Promise<boolean> => {
         // Cerco l'immagine della serie tv
         const hash           : string                = makeHashAsPath(magnet);
         const episode_ref    : database.Reference    = db.ref(`rows/${hash}`);
-        const image_url      : string                = await searchImage(episode_ref, title);
         let discard_reason   : string;
 
         // Verifico se è una delle serie tv che si è deciso di ignorare
@@ -67,7 +65,7 @@ export const refresh = async () : Promise<boolean> => {
         // La classe SimplyResultRow fa alcune 'cose' e potenzialmente altre 
         // in fase di input/outpt, non è un passaggio inutile
         const json_input  : json_fmt        = {
-            info, title, subtitle, magnet, episodes, tech_data, image_url, banned, discard_reason
+            info, title, subtitle, magnet, episodes, tech_data, banned, discard_reason
         };
         const row         : SimplyResultRow = new SimplyResultRow(json_input);
 

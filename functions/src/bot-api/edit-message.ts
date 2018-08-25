@@ -6,11 +6,11 @@ export const editMessage = async (chat_id: number, message_id: number, new_text:
     const params = {
         "chat_id"       : chat_id,
         "message_id"    : message_id,
-        "caption"       : new_text
+        "text"          : new_text
     }
 
-    await axios.post(TELEGRAM_API + "editMessageCaption", params)
+    await axios.post(TELEGRAM_API + "editMessageText", params)
         .catch( (error : AxiosError) => {
-            console.warn("editMessageCaption - Telegram KO", params, error.response.data);
+            console.warn("editMessageText - Telegram KO", params, error.response.data);
         })         
 }
