@@ -1,6 +1,7 @@
 import { makeHashAsPath } from '../helpers/make-hash';
 import { nowAsString } from '../helpers/now-as-string';
 import { episodesToItalian } from '../helpers/episodes_to_italian';
+import { techDataToItalian } from '../helpers/tech-data-to-italian';
 
 /**
  * @interface
@@ -111,7 +112,9 @@ class SimplyResultRow{
                 + episodesToItalian(this.episodes).episode_it
                 + "</i>"
             + " [" + this.episodes + "]"
-            + "\n\n" + this.tech_data
+            + "\n" 
+                + "\n" + techDataToItalian(this.tech_data)
+                + "\n" + this.tech_data
             + "\n" + this.info ;
     }
 
