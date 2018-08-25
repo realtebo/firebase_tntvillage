@@ -25,15 +25,15 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
     // Tastiera delle azioni
     const keyboard = { "inline_keyboard" : [  
         [
-            { "text"            : england_flag + " E' in inglese", 
+            { "text"            : england_flag, 
               "callback_data"   :  `command=is_english&hash=${hash_path}`	},
 
-            { "text"            : find_icon + " Google",  
+            { "text"            : find_icon,  
               "url"             :  `https://www.google.it/search?q=${row.title}` },
-        ], [
-            { "text"            : reycle_bin + " Cancella messaggio",  
-              "callback_data"   :  `command=delete_message` },
 
+            { "text"            : reycle_bin,  
+              "callback_data"   :  `command=delete_message` },
+        ], [
             { "text"            : ban_icon + " Ignora Serie",  
               "callback_data"   :  `command=delete_show&hash=${hash_path}` }
         ]
@@ -54,19 +54,19 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
         "reply_markup"          : keyboard,
     }
 
-    // Invio a Mirko
-    await axios.post(TELEGRAM_API + "sendMessage", reply_telegram)
+    // Spedizione
+    await axios
+        // Invio a Mirko
+        .post(TELEGRAM_API + "sendMessage", reply_telegram)
+        // Invio a Rita, se abilitato
+        .then( () => {
+            if (rita.val() !== 'off') {
+                reply_telegram.chat_id = RITA;
+                axios.post(TELEGRAM_API + "sendMessage", reply_telegram)
+            }
+        })
         .catch( (error : AxiosError) => {
             console.warn("sendEpisodeNotification #1 - Telegram sendMessage KO", error.response.data);
         });    
-
     
-    // Invio a Rita, se abilitato
-    if (rita.val() !== 'off') {
-        reply_telegram.chat_id = RITA;
-        await axios.post(TELEGRAM_API + "sendMessage", reply_telegram)
-            .catch( (error : AxiosError) => {
-                console.warn("sendEpisodeNotification #2 - Telegram KO", error.response.data);
-            });
-    }
 }
