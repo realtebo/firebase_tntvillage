@@ -112,9 +112,7 @@ class SimplyResultRow{
                 + episodesToItalian(this.episodes).episode_it
                 + "</i>"
             + " [" + this.episodes + "]"
-            + "\n" 
-                + "\n" + techDataToItalian(this.tech_data)
-                + "\n" + this.tech_data
+            + "\n\n" + techDataToItalian(this.tech_data)
             + "\n" + this.info ;
     }
 
