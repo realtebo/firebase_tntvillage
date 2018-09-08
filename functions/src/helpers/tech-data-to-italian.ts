@@ -27,6 +27,7 @@ export const techDataToItalian = ( tech_data: string ) : string => {
                 // Si noti che non scrivo nulla sul codec audio
                 break;
 
+            case "ITA ENG MP3": 
             case "ITA ENG AC3": 
             case "ITA ENG AC3 51":
             case "ITA AAC ENG AC3":
