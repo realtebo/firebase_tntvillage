@@ -15,13 +15,36 @@ const moveToSubtitle = (title : string, patternToMove : string) : TitleAndSubtit
         const regexp : RegExp = new RegExp(clean_pattern,"ig");
         new_title             = cleanString(new_title.replace(regexp, ""));
         new_subtitle          = clean_pattern;
-    }
-
+        
+        
+    } 
+    
     return <TitleAndSubtitle>{
         title    : new_title,
         subtitle : new_subtitle
     }
 }
+
+// Helper usato per decidere se e come appendere nuove stringhe al sottotitolo
+// Evita un bug che appendeva una fila di stringhe "null", bug comparso ad inizio settembre 
+// 2018
+const appendToSubtitle = (actual_subtitle: string, what_to_append: string) : string => {
+    
+    const cleaned_actual    = cleanString(actual_subtitle);
+    const cleaned_to_append = cleanString(what_to_append);
+
+    if (cleaned_actual !== null && cleaned_actual !== "" ) {
+        if (cleaned_to_append !== null && cleaned_to_append !== "") {
+            return cleaned_actual + " " + cleaned_to_append;
+        }
+        return cleaned_actual;
+    } 
+    if (cleaned_to_append !== null && cleaned_to_append !== "") {
+        return cleaned_actual + " " + cleaned_to_append;
+    } 
+    return "";
+}
+
 
 /**
  * Dato un titolo, rimuove alcune scritte inutili, passandole al sottotitolo
@@ -35,31 +58,31 @@ export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
     let cleaned_obj  : TitleAndSubtitle;
 
     cleaned_obj = moveToSubtitle(title_to_clean, "COMPLETE SEASON");
-    out_subtitle = cleaned_obj.subtitle;
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "STAGIONE COMPLETA");
-    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "COMPLETA");
-    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "SEASON FINALE");
-    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "V 1080");
-    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "V 720");
-    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "VERSIONE 720P");
-    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "REPACK");
-    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "FIXED");
-    out_subtitle = (out_subtitle ? out_subtitle + " " + cleaned_obj.subtitle : cleaned_obj.subtitle) ;
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
     // Rimuovo le parentesi dall'indicazione dell'anno
     cleaned_obj.title = cleaned_obj.title.replace(/\((20[0-9][0-9])\)/ig, "$1").trim();
@@ -76,7 +99,6 @@ export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
         throw new Error(`Impossibile matchare stagione/episodi dal titolo ${cleaned_obj.title}`);
     }
     const episodes         : string   = episodes_matches[0].trim();
-    
     
     cleaned_obj.title = cleaned_obj.title.replace(episodes, "");
 
