@@ -41,6 +41,11 @@ export const techDataToItalian = ( tech_data: string ) : string => {
                 // Si noti che non scrivo nulla sul codec audio
                 break;
 
+            case "ITA ENG FRA":
+                audio_language  = "Audio: italiano, inglese e francese";
+                // Si noti che non scrivo nulla sul codec audio
+                break;
+
             case "H264":
             case "H265":
                 // Nulla da scrivere
