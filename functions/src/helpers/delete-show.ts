@@ -9,9 +9,7 @@ export const deleteShow = async (hash: string, chat_id: number, message_id: numb
 
     try {
         const snap : json_fmt = await get_snap_from_hash(hash);
-        console.log ('deleting show', snap);
         if ( snap !== null && typeof snap.title !== 'undefined') {
-            console.log ('- Titolo non undefined');
             const title = cleanString(snap.title);
 
             // Verifica alternativa, usando il nuovo sistema ad albero
@@ -22,7 +20,6 @@ export const deleteShow = async (hash: string, chat_id: number, message_id: numb
 
             await editMessage(chat_id, message_id, `La serie TV ${title} verrà ignorata`);
         } else {
-            console.log ('- Titolo undefined');
             await editMessage(chat_id, message_id, `C'è stato un errore, sarà possibile eliminare la serie la prossima volta`);
         }
 
