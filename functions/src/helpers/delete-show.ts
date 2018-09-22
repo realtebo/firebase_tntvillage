@@ -10,7 +10,7 @@ export const deleteShow = async (hash: string, chat_id: number, message_id: numb
     try {
         const snap : json_fmt = await get_snap_from_hash(hash);
         console.log ('deleting show', snap);
-        if (typeof snap.title !== 'undefined') {
+        if ( snap !== null && typeof snap.title !== 'undefined') {
             console.log ('- Titolo non undefined');
             const title = cleanString(snap.title);
 
