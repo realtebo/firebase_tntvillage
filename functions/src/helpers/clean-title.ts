@@ -77,7 +77,10 @@ export const separateDataFromTitle = (title_to_clean : string) : TitleSubEp => {
     
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "VERSIONE 720P");
     out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
-    
+
+    cleaned_obj = moveToSubtitle(cleaned_obj.title, "VERSIONE 720");
+    out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
+
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "REPACK");
     out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
     
