@@ -94,12 +94,12 @@ export const techDataToItalian = (tech_data: string): string => {
     });
 
     out = '';
-    const video_icon = String.fromCodePoint(0x1F3A5);
-    const world_icon = String.fromCodePoint(0x1F30D);
-    const noaudio_icon = String.fromCodePoint(0x1F507);
+    const video_icon = "&#127909;"; // String.fromCodePoint(0x1F3A5);
+    const world_icon = "&#127757;"; // String.fromCodePoint(0x1F30D);
+    const noaudio_icon = "&#128263;"; // String.fromCodePoint(0x1F507);
     if (video_quality && video_quality.trim()) out = video_icon + " " + video_quality;
     if (audio_language && audio_language.trim()) out += `\n${world_icon} ${audio_language}`;
-    if (subtitles && subtitles.trim() ) out += `\n${noaudio_icon} ${subtitles}`;
-    if (other && other.trim() ) out += `\nAltre info: ${other}`;
+    if (subtitles && subtitles.trim()) out += `\n${noaudio_icon} ${subtitles}`;
+    if (other && other.trim()) out += `\nAltre info: ${other}`;
     return out;
 }

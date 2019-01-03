@@ -102,15 +102,20 @@ class SimplyResultRow {
             + (this.discard_reason ? "\n" + "Scatato perchè: " + this.discard_reason : "");
     }
 
+
     public toHtml = (): string => {
+
+        const it_season = + "\n<i>"
+            + episodesToItalian(this.episodes).season_it
+            + "</i>";
+        const it_episodes = + "\n<i>"
+            + episodesToItalian(this.episodes).episode_it
+            + "</i>";
+
         return "<b>" + this.title + "</b>"
             + (this.subtitle ? "\n" + this.subtitle : "")
-            + "\n<i>"
-            + episodesToItalian(this.episodes).season_it
-            + "</i>"
-            + "\n<i>"
-            + episodesToItalian(this.episodes).episode_it
-            + "</i>" // + " [" + this.episodes + "]"
+            + (it_season ? it_season : "")
+            + (it_episodes ? it_episodes : "Episodi: " + [this.episodes])
             + "\n\n" + techDataToItalian(this.tech_data)
             + "\n" + this.info;
     }
