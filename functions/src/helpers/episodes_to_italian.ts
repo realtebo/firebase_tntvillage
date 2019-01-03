@@ -7,14 +7,24 @@ export interface ItalianEpisodeDescriptor {
 
 export const episodesToItalian = (episodes: string): ItalianEpisodeDescriptor => {
 
-     if (!episodes) {
+     if (!episodes || typeof episodes === "undefined" || episodes === null) {
+          return <ItalianEpisodeDescriptor>{
+               season_it: "Stagione non precisata",
+               episode_it: "Episodi non precisata"
+          };
+     }
+
+     let matches: RegExpMatchArray;
+     try {
+          matches = episodes.match(SEAESON_REGEXP);
+     } catch (e) {
+          console.warn('[episodes_to_italian.ts][episodes_to_italian()] match ha generato un eccezione con il valore episodes = ', episodes);
           return <ItalianEpisodeDescriptor>{
                season_it: "Stagione non determinabile",
                episode_it: "Episodi non determinabili"
           };
      }
 
-     const matches: RegExpMatchArray = episodes.match(SEAESON_REGEXP);
 
      let season_it: string = "";
      if (matches[3]) {
