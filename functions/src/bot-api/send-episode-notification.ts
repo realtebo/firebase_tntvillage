@@ -16,6 +16,7 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
     const rita = await db.ref('rita').once('value');
 
     // Icone
+    
     const england_flag = String.fromCodePoint(0x1F1EC, 0x1F1E7);
     const find_icon    = String.fromCodePoint(0x1F50D);
     const reycle_bin   = String.fromCodePoint(0x1F5D1, 0xFE0F);
