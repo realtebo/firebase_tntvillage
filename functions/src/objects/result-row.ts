@@ -1,6 +1,6 @@
 import { makeHashAsPath } from '../helpers/make-hash';
 import { nowAsString } from '../helpers/now-as-string';
-import { episodesToItalian } from '../helpers/episodes_to_italian';
+import { episodesToItalian, ItalianEpisodeDescriptor } from '../helpers/episodes_to_italian';
 import { techDataToItalian } from '../helpers/tech-data-to-italian';
 
 /**
@@ -93,7 +93,7 @@ class SimplyResultRow {
     public toString = (): string => {
         return this.title
             + (this.subtitle ? "\n" + this.subtitle : "");
-            + "\n" + episodesToItalian(this.episodes).season_it
+        + "\n" + episodesToItalian(this.episodes).season_it
             + "\n" + episodesToItalian(this.episodes).episode_it
             + "\n[" + this.episodes + "]"
             + "\n" + this.tech_data
@@ -105,19 +105,29 @@ class SimplyResultRow {
 
     public toHtml = (): string => {
 
-        const it_season = "\n<i>"
-            + episodesToItalian(this.episodes).season_it
-            + "</i>";
-        const it_episodes = "\n<i>"
-            + episodesToItalian(this.episodes).episode_it
-            + "</i>";
+        let season_and_episode_info: string = "";
+
+        const episodes_to_italian: ItalianEpisodeDescriptor = episodesToItalian(this.episodes);
+
+        if (episodes_to_italian.season_it) {
+            season_and_episode_info += episodes_to_italian.season_it;
+        }
+        if (episodes_to_italian.episode_it) {
+            if (season_and_episode_info.trim()) {
+                season_and_episode_info += ", "
+            }
+            season_and_episode_info += episodes_to_italian.episode_it;
+        }
+
+        if (season_and_episode_info.trim()) {
+            season_and_episode_info = `\n<i>${season_and_episode_info}</i>`
+        }
 
         return "<b>" + this.title + "</b>"
             + (this.subtitle ? "\n" + this.subtitle : "")
-            + (it_season ? it_season : "")
-            + (it_episodes ? it_episodes : "Episodi: " + [this.episodes])
+            + (season_and_episode_info.trim() ? season_and_episode_info : "")
             + "\n\n" + techDataToItalian(this.tech_data)
-            + "\n" + this.info;
+            + (this.info ? `\nℹ️ ${this.info}` : "");
     }
 
     public toJson = (): json_fmt => {
