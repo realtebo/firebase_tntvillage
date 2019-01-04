@@ -93,7 +93,7 @@ class SimplyResultRow {
     public toString = (): string => {
         return this.title
             + (this.subtitle ? "\n" + this.subtitle : "");
-        + "\n" + episodesToItalian(this.episodes).season_it
+            + "\n" + episodesToItalian(this.episodes).season_it
             + "\n" + episodesToItalian(this.episodes).episode_it
             + "\n[" + this.episodes + "]"
             + "\n" + this.tech_data
@@ -105,10 +105,10 @@ class SimplyResultRow {
 
     public toHtml = (): string => {
 
-        const it_season = + "\n<i>"
+        const it_season = "\n<i>"
             + episodesToItalian(this.episodes).season_it
             + "</i>";
-        const it_episodes = + "\n<i>"
+        const it_episodes = "\n<i>"
             + episodesToItalian(this.episodes).episode_it
             + "</i>";
 
