@@ -127,7 +127,7 @@ class SimplyResultRow {
             + (this.subtitle ? "\n" + this.subtitle : "")
             + (season_and_episode_info.trim() ? season_and_episode_info : "")
             + "\n\n" + techDataToItalian(this.tech_data)
-            + (this.info ? `\nℹ️ ${this.info}` : "");
+            + (this.info ? `\n\nℹ️ ${this.info}` : "");
     }
 
     public toJson = (): json_fmt => {

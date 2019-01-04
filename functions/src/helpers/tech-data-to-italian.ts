@@ -96,8 +96,9 @@ export const techDataToItalian = (tech_data: string): string => {
 
     out = '';
 
-    if (video_quality && video_quality.trim()) out = `🎞️ ${video_quality}`;
-    if (audio_language && audio_language.trim()) out += (out.trim() ? "\n" : "") + `🌍 ${audio_language}`;
+    if (audio_language && audio_language.trim()) out += (out.trim() ? "\n" : "") + `${audio_language}`;
+    if (video_quality && video_quality.trim()) out += (out.trim() ? "\n" : "") + `${video_quality}`;
+
     // if (subtitles && subtitles.trim()) out += (out.trim() ? "\n" : "") + `📜 ${subtitles}`;
     if (other && other.trim()) out += (out.trim() ? "\n" : "") + `ℹ️ Altre info: ${other}`;
     return out;
