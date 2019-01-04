@@ -34,17 +34,17 @@ export const techDataToItalian = (tech_data: string): string => {
             case "ITA AC3 ENG EAC3": // errore di stumpa del releaser?
             case "ITA AC3 ENG AAC":
             case "ITA AC3 20 ENG AAC 5.1":
-                audio_language = "Audio: italiano e inglese";
+                audio_language = "🇮🇹 + 🇬🇧";
                 // Si noti che non scrivo nulla sul codec audio
                 break;
 
             case "ITA AC3 FRA FLAC":
-                audio_language = "Audio: italiano e francese";
+                audio_language = "🇮🇹 + 🇫🇷";
                 // Si noti che non scrivo nulla sul codec audio
                 break;
 
             case "ITA ENG FRA":
-                audio_language = "Audio: italiano, inglese e francese";
+                audio_language = "🇮🇹 + 🇬🇧 + 🇫🇷";
                 // Si noti che non scrivo nulla sul codec audio
                 break;
 
@@ -56,36 +56,36 @@ export const techDataToItalian = (tech_data: string): string => {
             case "XVID":
             case "DIVX":
             case "MUX":
-                video_quality = "Qualità video: non determinabile";
+                video_quality = "Qualità video non determinabile";
                 break;
             case "DVD9":
-                video_quality = "Qualità video: DVD";
+                video_quality = "⭐ Qualità DVD";
                 break;
 
             case "BDMUX 720P":
             case "BDRIP 720P":
             case "MUX 720P":
             case "720P":
-                video_quality = "Qualità video: HD Ready";
+                video_quality = "⭐⭐ HD Ready";
                 break;
 
 
             case "MUX 1080P":
             case "1080P":
-                video_quality = "Qualità video: Full HD";
+                video_quality = "⭐⭐⭐ Full HD";
                 break;
 
 
             case "SUB ITA ENG":
-                subtitles = "Sottotitoli: italiano e inglese";
+                subtitles = "🇮🇹 + 🇬🇧";
                 break;
 
             case "SUB ENG":
-                subtitles = "Sottotitoli: inglese";
+                subtitles = "🇬🇧";
                 break;
 
             case "MULTISUB":
-                subtitles = "Sottotitoli: si, non elencati";
+                subtitles = "✔️ (lingue non specificate)";
                 break;
 
             default:
@@ -96,9 +96,9 @@ export const techDataToItalian = (tech_data: string): string => {
 
     out = '';
 
-    if (video_quality && video_quality.trim()) out = video_quality;
-    if (audio_language && audio_language.trim()) out += `\n${audio_language}`;
-    if (subtitles && subtitles.trim()) out += `\n${subtitles}`;
-    if (other && other.trim()) out += `\nAltre info: ${other}`;
+    if (video_quality && video_quality.trim()) out = `🎞️ ${video_quality}`;
+    if (audio_language && audio_language.trim()) out += (out.trim() ? "\n" : "") + `🌍 ${audio_language}`;
+    if (subtitles && subtitles.trim()) out += (out.trim() ? "\n" : "") + `📜 ${subtitles}`;
+    if (other && other.trim()) out += (out.trim() ? "\n" : "") + `ℹ️ Altre info: ${other}`;
     return out;
 }
