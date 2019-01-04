@@ -16,14 +16,14 @@ export const techDataToItalian = (tech_data: string): string => {
             case "ITA AAC":
             case "ITA MP3":
             case "ITA AC3":
-                audio_language = "Audio: italiano";
+                audio_language = "🇮🇹";
                 // Si noti che non scrivo nulla sul codec audio                
                 break;
 
             case "ENG AAC":
             case "ENG MP3":
             case "ENG AC3":
-                audio_language = "Audio: solo inglese";
+                audio_language = "🇬🇧";
                 // Si noti che non scrivo nulla sul codec audio
                 break;
 
@@ -98,7 +98,7 @@ export const techDataToItalian = (tech_data: string): string => {
 
     if (video_quality && video_quality.trim()) out = `🎞️ ${video_quality}`;
     if (audio_language && audio_language.trim()) out += (out.trim() ? "\n" : "") + `🌍 ${audio_language}`;
-    if (subtitles && subtitles.trim()) out += (out.trim() ? "\n" : "") + `📜 ${subtitles}`;
+    // if (subtitles && subtitles.trim()) out += (out.trim() ? "\n" : "") + `📜 ${subtitles}`;
     if (other && other.trim()) out += (out.trim() ? "\n" : "") + `ℹ️ Altre info: ${other}`;
     return out;
 }
