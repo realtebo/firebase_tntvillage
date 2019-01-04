@@ -67,7 +67,7 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
             }
         })
         .catch( (error : AxiosError) => {
-            console.warn("sendEpisodeNotification #1 - Telegram sendMessage KO", error.response.data);
+            console.warn("sendEpisodeNotification #1 - Telegram sendMessage KO", error.response.data, " - dati inviati al bot: ", reply_telegram);
         });    
     
 }
