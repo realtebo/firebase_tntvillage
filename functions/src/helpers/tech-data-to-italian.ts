@@ -47,6 +47,13 @@ export const techDataToItalian = (tech_data: string): string => {
                 audio_language = "🇮🇹 + 🇬🇧 + 🇫🇷";
                 // Si noti che non scrivo nulla sul codec audio
                 break;
+            case "ITA ENG GER AC3 51":
+                audio_language = "🇮🇹 + 🇬🇧 + 🇩🇪";
+                break;
+
+            case "ITA SPA AC3 51":
+                audio_language = "🇮🇹 + 🇪🇸";
+                break;
 
             case "H264":
             case "H265":
