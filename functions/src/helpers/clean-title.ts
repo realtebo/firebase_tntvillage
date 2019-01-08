@@ -99,9 +99,7 @@ export const separateDataFromTitle = (title_to_clean: string): TitleSubEp => {
     const episodes_matches: string[] = cleaned_obj.title.match(SEAESON_REGEXP_GLOBAL);
 
     let episodes: string;
-    if (episodes_matches === null) {
-        console.warn(`Impossibile matchare stagione/episodi dal titolo ${cleaned_obj.title}`);
-    } else {
+    if (episodes_matches !== null) {
         episodes = episodes_matches[0].trim();
         cleaned_obj.title = cleaned_obj.title.replace(episodes, "").trim();
     }
