@@ -71,6 +71,7 @@ export const techDataToItalian = (tech_data: string): string => {
 
             case "BDMUX 720P":
             case "BDRIP 720P":
+            case "SATRIP 720P":
             case "MUX 720P":
             case "720P":
                 video_quality = "⭐⭐ HD Ready";
