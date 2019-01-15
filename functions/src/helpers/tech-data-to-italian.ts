@@ -16,6 +16,7 @@ export const techDataToItalian = (tech_data: string): string => {
             case "ITA AAC":
             case "ITA MP3":
             case "ITA AC3":
+            case "ITA AAC AC3":
                 audio_language = "🇮🇹";
                 // Si noti che non scrivo nulla sul codec audio                
                 break;
@@ -27,6 +28,7 @@ export const techDataToItalian = (tech_data: string): string => {
                 // Si noti che non scrivo nulla sul codec audio
                 break;
 
+            case "ITA ENG":
             case "ITA ENG MP3":
             case "ITA ENG AC3":
             case "ITA ENG AC3 51":
@@ -63,6 +65,7 @@ export const techDataToItalian = (tech_data: string): string => {
             case "XVID":
             case "DIVX":
             case "MUX":
+            case "SATRIP":
                 video_quality = "Qualità video non determinabile";
                 break;
             case "DVD9":
@@ -78,6 +81,7 @@ export const techDataToItalian = (tech_data: string): string => {
                 break;
 
 
+            case "BDMUX 10800P":
             case "MUX 1080P":
             case "1080P":
                 video_quality = "⭐⭐⭐ Full HD";
