@@ -69,6 +69,7 @@ export const techDataToItalian = (tech_data: string): string => {
                 video_quality = "Qualità video non determinabile";
                 break;
             case "DVD9":
+            case "DVDRIP":
                 video_quality = "⭐ Qualità DVD";
                 break;
 
@@ -80,13 +81,15 @@ export const techDataToItalian = (tech_data: string): string => {
                 video_quality = "⭐⭐ HD Ready";
                 break;
 
-
             case "BDMUX 10800P":
             case "MUX 1080P":
             case "1080P":
                 video_quality = "⭐⭐⭐ Full HD";
                 break;
 
+            case "SUB ITA":
+                subtitles = "🇮🇹";
+                break;
 
             case "SUB ITA ENG":
                 subtitles = "🇮🇹 + 🇬🇧";
