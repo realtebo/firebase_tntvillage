@@ -84,6 +84,7 @@ export const techDataToItalian = (tech_data: string): string => {
             case "BDMUX 10800P":
             case "MUX 1080P":
             case "1080P":
+            case "HDTV 1080I":
                 video_quality = "⭐⭐⭐ Full HD";
                 break;
 
