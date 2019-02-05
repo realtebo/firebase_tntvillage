@@ -70,6 +70,7 @@ export const techDataToItalian = (tech_data: string): string => {
                 break;
             case "DVD9":
             case "DVDRIP":
+            case "DTTRIP":
                 video_quality = "⭐ Qualità DVD";
                 break;
 

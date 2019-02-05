@@ -29,7 +29,7 @@ class Query {
             responseType: 'blob',
         }
         const data_to_post = this.post_data.toString();
-        console.log("Dati inviati via post", data_to_post);
+
         return axios.post(TNT_RELEASE_LIST, data_to_post, config)
             .then((response: AxiosResponse) => {
                 const tntResponse = new Response(this.post_data, response);
