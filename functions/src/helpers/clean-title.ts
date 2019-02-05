@@ -15,8 +15,6 @@ const moveToSubtitle = (title: string, patternToMove: string): TitleAndSubtitle 
         const regexp: RegExp = new RegExp(clean_pattern, "ig");
         new_title = cleanString(new_title.replace(regexp, ""));
         new_subtitle = clean_pattern;
-
-
     }
 
     return <TitleAndSubtitle>{
@@ -87,14 +85,11 @@ export const separateDataFromTitle = (title_to_clean: string): TitleSubEp => {
     cleaned_obj = moveToSubtitle(cleaned_obj.title, "FIXED");
     out_subtitle = appendToSubtitle(out_subtitle, cleaned_obj.subtitle);
 
-    // Rimuovo le parentesi dall'indicazione dell'anno
-    cleaned_obj.title = cleaned_obj.title.replace(/\((20[0-9][0-9])\)/ig, "$1").trim();
-
     // Rimuovo tutti gli spazi multipli
     cleaned_obj.title = cleaned_obj.title.replace(/\s\s/ig, " ").trim();
 
     // Rimuovo trattino finale, segno di una precedente pulizia
-    cleaned_obj.title = cleaned_obj.title.replace(/\-$/, "").trim();
+    cleaned_obj.title = cleaned_obj.title.replace(/\-$/ig, "").trim();
 
     const episodes_matches: string[] = cleaned_obj.title.match(SEAESON_REGEXP_GLOBAL);
 
@@ -104,6 +99,13 @@ export const separateDataFromTitle = (title_to_clean: string): TitleSubEp => {
         cleaned_obj.title = cleaned_obj.title.replace(episodes, "").trim();
     }
 
+    // Sposto l'anno dal titolo al sottotitolo
+    const year_matches: string[] = cleaned_obj.title.match(/\(?(19|20)[0-9][0-9]\)?/g);
+    if (year_matches !== null) {
+        const year = year_matches[0].trim();
+        cleaned_obj.title = cleaned_obj.title.replace(year, '');
+        out_subtitle = appendToSubtitle(out_subtitle, year);
+    }
 
     // Il punto non è accettato da firebase per le chiavi
     cleaned_obj.title = cleaned_obj.title.replace(/\./g, " ").trim();
