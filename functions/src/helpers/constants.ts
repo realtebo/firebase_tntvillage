@@ -27,3 +27,6 @@
 export const SEAESON_REGEXP        : RegExp  = /(s([0-9]{1,2})(-([0-9]{1,2}))?)e([0-9]{1,3})((-([0-9]{1,3})){0,3})/i;
 export const SEAESON_REGEXP_GLOBAL : RegExp  = /(s([0-9]{1,2})(-([0-9]{1,2}))?)e([0-9]{1,3})((-([0-9]{1,3})){0,3})/ig;
 
+export const TNT_RELEASE_LIST : string       = 'http://www.tntvillage.scambioetico.org/src/releaselist.php';
+export const TNT_CATEGORY     : number       = 29;
+export const TNT_HOST_HEADER  : string       = 'tntvillage.scambioetico.org';

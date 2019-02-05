@@ -19,7 +19,7 @@ export const refresh = async (): Promise<boolean> => {
 
     await db.ref('refresh').set(true);
 
-    const response: Response = await network.getPage(1, 29);
+    const response: Response = await network.getPage(1);
     if (response.data_length === "0") {
         // E' il caso dei timeout, non voglio che generi errore
         console.info('Errore in fase di fetching da TVT:', response.status_text);
