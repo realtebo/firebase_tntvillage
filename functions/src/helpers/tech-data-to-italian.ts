@@ -57,6 +57,10 @@ export const techDataToItalian = (tech_data: string): string => {
                 audio_language = "🇮🇹 + 🇪🇸";
                 break;
 
+            case "ITA SVE AC3":
+                audio_language = "🇮🇹 + 🇸🇪";
+                break;
+
             case "H264":
             case "H265":
                 // Nulla da scrivere
@@ -82,11 +86,15 @@ export const techDataToItalian = (tech_data: string): string => {
                 video_quality = "⭐⭐ HD Ready";
                 break;
 
-            case "BDMUX 10800P":
+            case "BDMUX 1080P":
             case "MUX 1080P":
             case "1080P":
             case "HDTV 1080I":
                 video_quality = "⭐⭐⭐ Full HD";
+                break;
+
+            case "HARDSUB ITA":
+                subtitles = "🇮🇹 (fissi)";
                 break;
 
             case "SUB ITA":
