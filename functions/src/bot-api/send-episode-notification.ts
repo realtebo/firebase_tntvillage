@@ -60,10 +60,10 @@ export const sendEpisodeNotification = async (hash : string) : Promise<void> => 
         // Invio a Mirko
         .post(TELEGRAM_API + "sendMessage", reply_telegram)
         // Invio a Rita, se abilitato
-        .then( () => {
+        .then( async () => {
             if (rita.val() !== 'off') {
                 reply_telegram.chat_id = RITA;
-                axios.post(TELEGRAM_API + "sendMessage", reply_telegram)
+                await axios.post(TELEGRAM_API + "sendMessage", reply_telegram)
             }
         })
         .catch( (error : AxiosError) => {

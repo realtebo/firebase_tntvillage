@@ -5,9 +5,9 @@ if (!admin.apps.length) {
 }
 
 const myDb     : admin.database.Database = admin.database();
-const myBucket = admin.storage().bucket();
+// const myBucket = admin.storage().bucket();
 
 export {
     myDb     as db,
-    myBucket as bucket,
+    // myBucket as bucket,
 }

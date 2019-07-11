@@ -1,4 +1,4 @@
-import axios, { AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosResponse, AxiosError, ResponseType } from 'axios';
 import PostData from './post-data';
 import Response from './response';
 
@@ -26,7 +26,7 @@ class Query {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Host': TNT_HOST_HEADER,
             },
-            responseType: 'blob',
+            responseType: <ResponseType> 'blob'
         }
         const data_to_post = this.post_data.toString();
 
