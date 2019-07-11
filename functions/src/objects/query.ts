@@ -22,7 +22,8 @@ class Query {
 
         const config = {
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
+                //'X-Requested-With': 'XMLHttpRequest',
+                'Referer': 'http://tntvillage.scambioetico.org/?releaselist',
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Host': TNT_HOST_HEADER,
             },
