@@ -2,3 +2,4 @@
 functions/lib
 .firebaserc
 **/firebase-debug.log
+.idea/
