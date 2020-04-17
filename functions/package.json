@@ -11,20 +11,20 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "axios": "^0.19.0",
-    "cheerio": "^1.0.0-rc.2",
-    "firebase-admin": "^8.2.0",
-    "firebase-functions": "^3.1.0",
+    "axios": "^0.19.2",
+    "cheerio": "^1.0.0-rc.3",
+    "firebase-admin": "^8.10.0",
+    "firebase-functions": "^3.6.0",
     "google-images": "^2.1.0",
-    "lodash": "^4.17.14",
-    "uuid": "^3.3.2"
+    "lodash": "^4.17.15",
+    "uuid": "^3.4.0"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.12",
-    "@types/lodash": "^4.14.136",
-    "@types/uuid": "^3.4.5",
-    "tslint": "^5.18.0",
-    "typescript": "^3.5.3"
+    "@types/cheerio": "^0.22.17",
+    "@types/lodash": "^4.14.149",
+    "@types/uuid": "^3.4.8",
+    "tslint": "^5.20.1",
+    "typescript": "^3.8.3"
   },
   "private": true,
   "engines": {
