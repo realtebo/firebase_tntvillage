@@ -16,7 +16,7 @@
     "firebase-admin": "^8.10.0",
     "firebase-functions": "^3.6.0",
     "google-images": "^2.1.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "uuid": "^3.4.0"
   },
   "devDependencies": {
